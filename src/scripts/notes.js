@@ -20,10 +20,9 @@ var handler = {
     			return target[noteName]
     		}
     		else {
-    			console.log('TODO: proxy other alternative note names')
     			return null;
     		}
     }
 }
 
-module.exports = new Proxy(notes, handler)
+module.exports = notes

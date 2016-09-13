@@ -1,43 +1,27 @@
 import React, { Component } from 'react';
 import {Input, Button, Card, Row, Col} from 'react-materialize';
-import notes from '../scripts/notes'
-import scaleSpacings from '../scripts/scaleSpacings'
 
 export default class ButtonContainer extends Component {
 
   render() {
+
     var colWidth = 2;
-    var noteRowBreak = 6;
-    var noteNames = Object.keys(notes);
-    var row1 = noteNames.slice(0, noteRowBreak)
-    var row2 = noteNames.slice(noteRowBreak)
+    var noteRowBreak = 4;
+    
+    var row1 = this.props.noteButtons.slice(0, noteRowBreak)
+    var row2 = this.props.noteButtons.slice(noteRowBreak)
 
 
     return (
-
-        <div className="ButtonContainer">
-          <Row>
-            
-            {row1.map((noteName) => {
+        <div className="ButtonContainer">            
+            {this.props.noteButtons.map((noteButton) => {
               return (
-                <Col s={colWidth} key={noteName}>
-                  <Button waves='light'>{noteName}</Button>
-                </Col>
+
+                  <Button className={noteButton.isPushed ? 'active' : ''} key={noteButton.value} waves='light'>D:  {noteButton.degreeDisplay}, V: {noteButton.value}, N: {noteButton.noteDisplay}</Button>
+   
               )
             })}
           
-          </Row>
-          <Row>
-            
-            {row2.map((noteName) => {
-              return (
-                <Col s={colWidth} key={noteName}>
-                  <Button waves='light'>{noteName}</Button>
-                </Col>
-              )
-            })}
-
-          </Row>
         </div>
      
     );
