@@ -3,22 +3,23 @@ import ReactDOM from 'react-dom';
 import App from './components/App';
 import store from './stores/appStore'
 import noteButton from './scripts/noteButton'
+import NoteWriter from './scripts/noteWriter'
 
-store.subscribe(function() {
-	render();
-})
+// store.subscribe(function() {
+// 	render();
+// })
 
-render()
+// render()
 
-function render() {
-	let state = store.getState() 
-	ReactDOM.render(<App {...state}/>, document.getElementById('root'));
-} 
+// function render() {
+// 	let state = store.getState() 
+// 	ReactDOM.render(<App {...state}/>, document.getElementById('root'));
+// } 
 
 
 var keyCodeButtonIndexes = {
 	74: 0, //j degree 1 to start 
-	85: 1, //u degree 2 tp start
+	85: 1, //u degree 2 to start
 	75: 2, //k degree 3 to start
 	73: 3, //i degree 4 to start
 	76: 4, //l degree 5 to start
@@ -38,19 +39,19 @@ var keyCodePositionIndexes = {
 	81: 7, //q key, position 8,
 }
 
+const noteWriter = new NoteWriter();
 
 document.addEventListener('keydown', function(e) {
 	var buttonIndex = keyCodeButtonIndexes[e.keyCode]
+	var positionIndex = keyCodePositionIndexes[e.keyCode];
 	
 	if (buttonIndex !== undefined) {
-		store.dispatch({type: 'BUTTON_DOWN', index: buttonIndex})
-		return;
+		noteWriter.trigger('note_button_down', {
+			buttonIndex: buttonIndex
+		})
 	}
-
-	var positionIndex = keyCodePositionIndexes[e.keyCode];
-
-	if (positionIndex !== undefined) {
-		store.dispatch({type: 'CONFIG_CHANGE', data: {position: positionIndex}})
+	else if (positionIndex !== undefined) {
+		// store.dispatch({type: 'CONFIG_CHANGE', data: {position: positionIndex}})
 		return;
 	}
 
@@ -58,16 +59,48 @@ document.addEventListener('keydown', function(e) {
 
 document.addEventListener('keyup', function(e) {
 	var buttonIndex = keyCodeButtonIndexes[e.keyCode]
-	
+	var positionIndex = keyCodePositionIndexes[e.keyCode];
+
 	if (buttonIndex !== undefined) {
-		store.dispatch({type: 'BUTTON_UP', index: buttonIndex})
+		noteWriter.trigger('note_button_up', {
+			buttonIndex: buttonIndex
+		})
 		return;
 	}
 
 })
 
+var unsubscribe = noteWriter.on('note_on', function(noteValue, noteData) {
+	console.log('listener called')
+})
+
+setTimeout(function() {
+	unsubscribe()
+}, 4000)
 
 
+
+
+
+
+// window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+// var context = new AudioContext();
+
+// var masterGain = context.createGain();
+// masterGain.gain.value = 0.3;
+// masterGain.connect(context.destination); 
+
+// var oscillator = context.createOscillator();
+// oscillator.type = 'square';
+// oscillator.frequency.value = 440;
+// oscillator.connect(masterGain);
+// oscillator.start(0);
+
+
+// setTimeout(function() {
+// 	oscillator.stop(0)
+// }, 4000)
 
 
 
