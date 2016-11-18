@@ -69,6 +69,22 @@ function getNoteNameFromValue(value, octave, offset) {
 	}	
 }
 
+function getOffsetFromDegreeInScale(degree, scale) {
+	const spacingLength = scale.spacing.length;
+	var index = degree; //degree is zero based
+
+	if (index < spacingLength) {
+		return scale.spacing[index]
+	}
+	else if (index % spacingLength >= 0) {
+		let octaveOffset = Math.floor(index/spacingLength)
+		let adjustedIndex = index % spacingLength
+
+		return (12 * octaveOffset) + scale.spacing[adjustedIndex]
+	}
+}
+
 
 
 module.exports.getNoteNameFromValue = getNoteNameFromValue
+module.exports.getOffsetFromDegreeInScale = getOffsetFromDegreeInScale
