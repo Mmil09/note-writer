@@ -28,6 +28,18 @@ function valueIsInRange(value, range) {
 	return value >= range[0] && value <= range[1]
 }
 
+function notifyEventListeners(eventType, data) {
+	var eventListenerIndexes = Object.keys(eventListeners)
+
+	eventListenerIndexes.forEach(listenerIndex => {
+		let listener = eventListeners[listenerIndex]
+		
+		if (listener.type === eventType) {
+			listener.callback(data)
+		}
+	})
+}
+
 export default class NoteWriter {
 
 	constructor(options = {}) {
@@ -111,7 +123,7 @@ export default class NoteWriter {
 				}
 				break;
 			case 'scale_change':
-				if (this.config.scale === value) {
+				if (this.config.scale.name === value) {
 					return;
 				}
 				break;
@@ -122,7 +134,6 @@ export default class NoteWriter {
 				break;
 			case 'position_change':
 				if (this.config.position === value) {
-					console.log('same position')
 					return;
 				}
 				break;
@@ -139,8 +150,10 @@ export default class NoteWriter {
 		switch(action) {
 
 			case 'key_change':
+				this.handleKeyChange(value)
 				break;
 			case 'scale_change':
+				this.handleScaleChange(value)
 				break;
 			case 'octave_change':
 				this.handleOctaveChange(value)
@@ -149,6 +162,7 @@ export default class NoteWriter {
 				this.handlePositionChange(value)
 				break;
 			case 'mode_change':
+				this.handleModeChange(value)
 				break;
 		}
 
@@ -163,34 +177,34 @@ export default class NoteWriter {
 
 	handlePositionChange(newPosition) {
 		this.config.position = newPosition;
+		notifyEventListeners('position_change', newPosition)
+	}
 
-		var eventListenerIndexes = Object.keys(eventListeners)
+	handleScaleChange(newScaleName) {
+		var newScale = scales[newScaleName]
+		this.config.scale = newScale;
+		notifyEventListeners('scale_change', newScale)
+	}
 
-		eventListenerIndexes.forEach(listenerIndex => {
-			let listener = eventListeners[listenerIndex]
-			
-			if (listener.type === 'position_change') {
-				listener.callback(newPosition)
-			}
-		})
+	handleModeChange(newMode) {
+		this.config.mode = newMode;
+		notifyEventListeners('mode_change', newMode)
+	}
+
+	handleKeyChange(newKey) {
+		this.config.key = newKey;
+		notifyEventListeners('key_change', newKey)		
 	}
 
 	handleOctaveChange(newOctave) {
 		this.config.octave = newOctave;
-
-		var eventListenerIndexes = Object.keys(eventListeners)
-
-		eventListenerIndexes.forEach(listenerIndex => {
-			let listener = eventListeners[listenerIndex]
-			
-			if (listener.type === 'octave_change') {
-				listener.callback(newOctave)
-			}
-		})
+		notifyEventListeners('octave_change', newOctave)
 	}
 
 	setNoteButtonsAfterConfigChange() {
 		var self = this;
+
+		notifyEventListeners('config_change', {...this.config})
 
 		for (var i = 0; i < this.noteButtons.length; i++) {
 			var noteButton = this.noteButtons[i]
@@ -236,8 +250,12 @@ export default class NoteWriter {
 	}
 
 	setNoteOn(noteValue, noteButtonIndex, data = {}) {
+		var self = this;
+
 		var eventListenerIndexes = Object.keys(eventListeners)
 		
+		notifyEventListeners('note_buttons_change', [...self.noteButtons])
+
 		eventListenerIndexes.forEach(listenerIndex => {
 			let listener = eventListeners[listenerIndex]
 			
@@ -248,7 +266,11 @@ export default class NoteWriter {
 	}
 
 	setNoteOff(noteValue, noteButtonIndex, data = {}) {
+		var self = this;
+
 		var eventListenerIndexes = Object.keys(eventListeners)
+
+		notifyEventListeners('note_buttons_change', [...self.noteButtons])
 		
 		eventListenerIndexes.forEach(listenerIndex => {
 			let listener = eventListeners[listenerIndex]
@@ -259,5 +281,44 @@ export default class NoteWriter {
 		})
 	}
 
+	getConfig() {
+		return {...this.config}
+	}
+
+	getNoteButtons() {
+		return [...this.noteButtons]
+	}
+
+	get minOctave() {
+		return 1
+	}
+
+	get maxOctave() {
+		return 8
+	}
+
+	get minKey() {
+		return 0
+	}
+
+	get maxKey() {
+		return 11
+	}
+
+	get minPosition() {
+		return 0
+	}
+
+	get maxPosition() {
+		return 7
+	}
+
+	get minMode() {
+		return 0
+	}
+
+	get maxMode() {
+		return 7
+	}
 
 }

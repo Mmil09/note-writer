@@ -14,10 +14,10 @@ export default class ButtonContainer extends Component {
 
     return (
         <div className="ButtonContainer">            
-            {this.props.noteButtons.map((noteButton) => {
+            {this.props.noteButtons.map((noteButton, index) => {
               return (
 
-                  <Button className={noteButton.isPushed ? 'active' : ''} key={noteButton.value} waves='light'>D:  {noteButton.degreeDisplay}, V: {noteButton.value}, N: {noteButton.noteDisplay}</Button>
+                  <Button className={noteButton.isPushed ? 'active' : ''} key={index} waves='light'>D:  {noteButton.degreeDisplay}, V: {noteButton.value}, N: {noteButton.noteDisplay}</Button>
    
               )
             })}
