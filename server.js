@@ -5,7 +5,7 @@ var config = require('./src/config')
 
 new WebpackDevServer(webpack(webpackConfig), {
   publicPath: webpackConfig.output.publicPath,
-  hot: true,
+  // hot: true,
   historyApiFallback: true
 }).listen(config.port, 'localhost', function (err, result) {
   if (err) {

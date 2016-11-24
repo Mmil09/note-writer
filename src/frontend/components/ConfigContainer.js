@@ -106,6 +106,8 @@ const ConfigContainer = (props) => {
           <Col s={12}>
 
               <p className="range-field">
+
+              
                 <input type="range" min={String(props.minPosition)} max={String(props.maxPosition)} value={props.config.position} onChange={handlePositionChange}/>
               </p>
           </Col>
