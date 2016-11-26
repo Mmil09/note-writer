@@ -1,15 +1,23 @@
 import React from 'react';
 import ButtonContainer from './ButtonContainer'
 import ConfigContainer from './ConfigContainer'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import TopBar from './TopBar'
+import BottomBar from './BottomBar'
 
+const SIZES = {
+  normal: {
+    width: 800,
+    height: 600
+  }
+}
 
 export default class App extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      config: props.noteWriter.getConfig(),
-      noteButtons: props.noteWriter.getNoteButtons(),
+      size: {...SIZES.normal},
     }
 
     this.handlePositionChange = this._handlePositionChange.bind(this)
@@ -19,31 +27,11 @@ export default class App extends React.Component {
     this.handleKeyChange = this._handleKeyChange.bind(this)
   }
 
-  componentDidMount() {
-    var self = this;
-    //render for config change
-    this.unsubscribeConfigChange = this.props.noteWriter.on('config_change', function(newConfig) {
-      self.setState({
-        config: newConfig,
-        noteButtons: self.state.noteButtons
-      })
-    })
-
-    //render for note buttons change
-    this.unsubscribeNoteButtonsChange = this.props.noteWriter.on('note_buttons_change', function(newNoteButtons) {
-      self.setState({
-        config: self.state.config,
-        noteButtons: newNoteButtons
-      })
-    })
-  }
-
   _handlePositionChange(newPosition) {
     this.props.noteWriter.trigger('position_change', newPosition)
   }
 
   _handleScaleChange(newScale) {
-    console.log(newScale)
     this.props.noteWriter.trigger('scale_change', newScale)
   }
 
@@ -60,35 +48,47 @@ export default class App extends React.Component {
   }
 
   render() {
-    var noteWriter = this.props.noteWriter
+    let {size} = this.state
+    let {config, noteButtons} = this.props;
+
+    var style = {
+      width: `${size.width}px`,
+      height: `${size.height}px`
+    }
 
     return (
-    	<div>
+      <MuiThemeProvider>
+      	<div className="App" style={style}>
+          
+          <TopBar/>
 
+          <div className="Middle">
+            <ButtonContainer 
+              noteButtons={noteButtons}
+            />
 
-              <ButtonContainer 
-                noteButtons={this.state.noteButtons}
-              />
+            <ConfigContainer 
+              config={config}
+              minOctave={config.minOctave}
+              maxOctave={config.maxOctave}
+              minKey={config.minKey}
+              maxKey={config.maxKey}
+              minPosition={config.minPosition}
+              maxPosition={config.maxPosition}
+              minMode={config.minMode}
+              maxMode={config.maxMode}
+              onScaleChange={this.props.onScaleChange}
+              onPositionChange={this.props.onPositionChange}
+              onModeChange={this.props.onModeChange}
+              onKeyChange={this.props.onKeyChange}
+              onOctaveChange={this.props.onOctaveChange}
+            />
+          </div>
 
-
-              <ConfigContainer 
-                config={this.state.config}
-                minOctave={noteWriter.minOctave}
-                maxOctave={noteWriter.maxOctave}
-                minKey={noteWriter.minKey}
-                maxKey={noteWriter.maxKey}
-                minPosition={noteWriter.minPosition}
-                maxPosition={noteWriter.maxPosition}
-                minMode={noteWriter.minMode}
-                maxMode={noteWriter.maxMode}
-                onScaleChange={this.handleScaleChange}
-                onPositionChange={this.handlePositionChange}
-                onModeChange={this.handleModeChange}
-                onKeyChange={this.handleKeyChange}
-                onOctaveChange={this.handleOctaveChange}
-              />
-
-      </div>
+          <BottomBar/>
+        
+        </div>
+      </MuiThemeProvider>
      
     );
   }

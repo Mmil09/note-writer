@@ -2,19 +2,12 @@ doctype html
 html
   head
     link(rel='stylesheet', href="https://fonts.googleapis.com/css?family=Roboto:300,400,500")
+    link(rel='stylesheet', href="/stylesheets/index.css")
     script(type="text/javascript" src="#{socketUrl}/socket.io/socket.io.js")
     script.
       var SOCKET_URL = "#{socketUrl}"
       var INITIAL_CONFIG = !{JSON.stringify(initialConfig)}
       var INITIAL_NOTE_BUTTONS = !{JSON.stringify(initialNoteButtons)}
-    
-    style(type='text/css').
-      .label-row {
-      margin-bottom: 0;
-      }
-      .btn.active {
-      opacity:0.5;
-      }
     title Note Writer
   
   body

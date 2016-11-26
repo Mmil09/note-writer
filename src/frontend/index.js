@@ -1,28 +1,93 @@
+const socket = io(SOCKET_URL);
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App';
-import triggerEvents from './scripts/triggerEvents'
-import listenEvents from './scripts/listenEvents'
+import keyboardBindings from './scripts/keyboardBindings'
+keyboardBindings(socket)
+import synth from './scripts/synth'
+import injectTapEventPlugin from 'react-tap-event-plugin';
+// Needed for onTouchTap - http://stackoverflow.com/a/34015469/988941
+injectTapEventPlugin();
 
-var socket = io(SOCKET_URL);
+let currentNoteButtons = INITIAL_NOTE_BUTTONS,
+		currentConfig = INITIAL_CONFIG,
+		currentSynthSettings = {
+			enabled: true,
+			type: 'sawtooth',
+		}
 
-triggerEvents(socket)
-listenEvents(socket)
 
 socket.on('note_buttons_change', function(noteButtons) {
-	console.log('note_buttons_change', noteButtons)
+	currentNoteButtons = noteButtons
+	renderApp()
 })
 
 socket.on('config_change', function(config) {
-	console.log('config_change', config)
+	currentConfig = config
+	renderApp()
 })
 
-// const noteWriter = new NoteWriter();
-
-// triggerEvents(noteWriter)
-// listenEvents(noteWriter)
+socket.on('note_on', function(noteData) {
+	if (currentSynthSettings.enabled) {
+		synth.playOscillator(noteData)
+	}
 	
-// ReactDOM.render(<App noteWriter={noteWriter}/>, document.getElementById('root'));
+})
+
+socket.on('note_off', function(noteData) {
+	if (currentSynthSettings.enabled) {
+		synth.stopOscillator(noteData)
+	}
+})
+
+
+function renderApp() {
+	ReactDOM.render(
+		<App
+			synthSettings={currentSynthSettings} 
+			config={currentConfig}
+			noteButtons={currentNoteButtons}
+      onScaleChange={handleScaleChange}
+      onPositionChange={handlePositionChange}
+      onModeChange={handleModeChange}
+      onKeyChange={handleKeyChange}
+      onOctaveChange={handleOctaveChange}
+      onToggleSynth={handleToggleSynth}
+		/>, 
+		document.getElementById('root'));
+}
+
+function handlePositionChange(newPosition) {
+  socket.emit('position_change', newPosition)
+}
+
+function handleScaleChange(newScale) {
+  socket.emit('scale_change', newScale)
+}
+
+function handleModeChange(newMode) {
+  socket.emit('mode_change', newMode)
+}
+
+function handleOctaveChange(newOctave) {
+  socket.emit('octave_change', newOctave)
+}
+
+function handleKeyChange(newKey) {
+  socket.emit('key_change', newKey)
+}
+
+function handleToggleSynth() {
+	currentSynthSettings.enabled = !currentSynthSettings.enabled;
+	
+	if (!currentSynthSettings.enabled) {
+		synth.stopAllOscillators()
+	}
+
+	renderApp()
+}
+
+
 
 
 

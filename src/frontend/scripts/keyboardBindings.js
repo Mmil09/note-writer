@@ -43,7 +43,7 @@ const keyCodeOctaveIndexes = {
 	// 77: 7, //m key
 }
 
-const triggerEvents = (socket) => {
+const keyboardBindings = (socket) => {
 
 	document.addEventListener('keydown', function(e) {
 		var buttonIndex = keyCodeButtonIndexes[e.keyCode]
@@ -123,4 +123,4 @@ const triggerEvents = (socket) => {
 	}
 }
 
-export default triggerEvents
+export default keyboardBindings

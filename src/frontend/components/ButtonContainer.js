@@ -1,28 +1,32 @@
 import React from 'react';
+import cx from 'classnames'
+import FlatButton from 'material-ui/FlatButton';
 
-export default class ButtonContainer extends React.Component {
-
-  render() {
-
-    var colWidth = 2;
-    var noteRowBreak = 4;
-    
-    var row1 = this.props.noteButtons.slice(0, noteRowBreak)
-    var row2 = this.props.noteButtons.slice(noteRowBreak)
+const ButtonContainer = (props) => {
 
 
-    return (
-        <div className="ButtonContainer">            
-            {this.props.noteButtons.map((noteButton, index) => {
-              return (
 
-                  <Button className={noteButton.isPushed ? 'active' : ''} key={index} waves='light'>D:  {noteButton.degreeDisplay}, V: {noteButton.value}, N: {noteButton.noteDisplay}</Button>
+  return (
+      <div className="ButtonContainer">            
+          {props.noteButtons.map((noteButton, index) => {
+            
+            var classes = {
+              'NoteButton': true,
+              active: noteButton.isPushed,
+            }
+
+            var buttonStyle = {
+              height: '50px'
+            }
+
+            return (
+              <FlatButton style={buttonStyle} className={cx(classes)} key={index}>D:  {noteButton.degree}, V: {noteButton.noteValue}, N: {noteButton.noteDisplay}</FlatButton>
+            )
+          })}
+        
+      </div>
    
-              )
-            })}
-          
-        </div>
-     
-    );
-  }
+  )
 }
+
+export default ButtonContainer
