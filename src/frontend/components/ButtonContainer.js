@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
-import {Input, Button, Card, Row, Col} from 'react-materialize';
+import React from 'react';
 
-export default class ButtonContainer extends Component {
+export default class ButtonContainer extends React.Component {
 
   render() {
 

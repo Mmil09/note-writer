@@ -1,28 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App';
-import noteButton from './scripts/noteButton'
-import NoteWriter from './scripts/noteWriter'
 import triggerEvents from './scripts/triggerEvents'
 import listenEvents from './scripts/listenEvents'
-import WebMidi from 'webmidi'
 
 var socket = io(SOCKET_URL);
 
+triggerEvents(socket)
+listenEvents(socket)
 
-
-socket.emit('trigger', {
-	action: 'note_button_down',
-	noteButtonIndex: 1,
-	data: {},
+socket.on('note_buttons_change', function(noteButtons) {
+	console.log('note_buttons_change', noteButtons)
 })
 
-const noteWriter = new NoteWriter();
+socket.on('config_change', function(config) {
+	console.log('config_change', config)
+})
 
-triggerEvents(noteWriter)
-listenEvents(noteWriter)
+// const noteWriter = new NoteWriter();
+
+// triggerEvents(noteWriter)
+// listenEvents(noteWriter)
 	
-ReactDOM.render(<App noteWriter={noteWriter}/>, document.getElementById('root'));
+// ReactDOM.render(<App noteWriter={noteWriter}/>, document.getElementById('root'));
 
 
 

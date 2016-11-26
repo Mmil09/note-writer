@@ -1,4 +1,6 @@
-import notes from './notes'
+'use strict';
+
+var notes = require('./notes')
 
 function getNoteNameFromValue(value, octave, offset) {
 	const greatestNoteValue = notes['B'];

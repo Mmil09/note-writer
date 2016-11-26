@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
-import {Input, Button, Card, Row, Col} from 'react-materialize';
+import React from 'react';
 import ButtonContainer from './ButtonContainer'
 import ConfigContainer from './ConfigContainer'
 
 
-export default class App extends Component {
+export default class App extends React.Component {
   constructor(props) {
     super(props)
 
@@ -65,13 +64,13 @@ export default class App extends Component {
 
     return (
     	<div>
-          <Row>
-            <Col s={4}>
+
+
               <ButtonContainer 
                 noteButtons={this.state.noteButtons}
               />
-            </Col>
-            <Col s={8}>
+
+
               <ConfigContainer 
                 config={this.state.config}
                 minOctave={noteWriter.minOctave}
@@ -88,8 +87,7 @@ export default class App extends Component {
                 onKeyChange={this.handleKeyChange}
                 onOctaveChange={this.handleOctaveChange}
               />
-            </Col>
-          </Row>
+
       </div>
      
     );

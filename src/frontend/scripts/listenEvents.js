@@ -11,7 +11,7 @@ const midiFrequencies = function getHertzFromMidiValue() {
 	return midi;
 }()
 
-const listenEvents = (noteWriter) => {
+const listenEvents = (socket) => {
 
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
@@ -21,7 +21,7 @@ const listenEvents = (noteWriter) => {
 	masterGain.gain.value = 0.3;
 	masterGain.connect(context.destination); 
 
-	let oscillators = {}
+	var oscillators = {}
 
 	function getNewOscillator() {
 		var oscillator = context.createOscillator();
@@ -30,21 +30,29 @@ const listenEvents = (noteWriter) => {
 		return oscillator
 	}
 
-	var unsubscribeNoteOn = noteWriter.on('note_on', function(noteValue, noteButtonIndex, data) {
-		// console.log('note on called', noteValue, noteButtonIndex)
-		oscillators[noteButtonIndex] = getNewOscillator()
-		oscillators[noteButtonIndex].frequency.value = midiFrequencies[noteValue];
-		oscillators[noteButtonIndex].start(0);
+	socket.on('note_on', function(data) {
+		// console.log('note on called', data)
+		playOscillator(data)
 	})
 
-	var unsubscribeNoteOff = noteWriter.on('note_off', function(noteValue, noteButtonIndex, data) {
-		// console.log('note_off called', noteValue, noteButtonIndex)
-		oscillators[noteButtonIndex].stop(0);
+	socket.on('note_off', function(data) {
+		// console.log('note off called', data)
+		stopOscillator(data)
 	})
+}
 
-	var unsubscribePositionChange = noteWriter.on('position_change', function(newPosition) {
-		// console.log('new position received', newPosition)
-	})	
+function playOscillator(data) {
+	return;
+	oscillators[data.noteButtonIndex] = getNewOscillator()
+	oscillators[data.noteButtonIndex].frequency.value = midiFrequencies[data.noteValue];
+	oscillators[data.noteButtonIndex].start(0);
+}
+
+function stopOscillator(data) {
+	return;
+	if (oscillators[data.noteButtonIndex]) {
+		oscillators[data.noteButtonIndex].stop(0);
+	}
 }
 
 export default listenEvents

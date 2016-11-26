@@ -43,13 +43,31 @@ const keyCodeOctaveIndexes = {
 	// 77: 7, //m key
 }
 
-const triggerEvents = (noteWriter) => {
+const triggerEvents = (socket) => {
 
 	document.addEventListener('keydown', function(e) {
 		var buttonIndex = keyCodeButtonIndexes[e.keyCode]
 		
 		if (buttonIndex !== undefined) {
-			noteWriter.trigger('note_button_down', buttonIndex)
+			socket.emit('note_button_down', {
+				noteButtonIndex: buttonIndex,
+				velocity: 64,
+				channel: 1,
+			})
+		}
+	})
+
+	document.addEventListener('keyup', function(e) {
+		var buttonIndex = keyCodeButtonIndexes[e.keyCode]
+		var positionIndex = keyCodePositionIndexes[e.keyCode];
+
+		if (buttonIndex !== undefined) {
+			socket.emit('note_button_up', {
+				noteButtonIndex: buttonIndex,
+				velocity: 64,
+				channel: 1,
+			})
+			return;
 		}
 	})
 
@@ -57,7 +75,7 @@ const triggerEvents = (noteWriter) => {
 		var positionIndex = keyCodePositionIndexes[e.keyCode];
 
 		if (positionIndex !== undefined) {
-			noteWriter.trigger('position_change', positionIndex)
+			socket.emit('position_change', {positionIndex: positionIndex})
 		}
 	})
 
@@ -65,8 +83,7 @@ const triggerEvents = (noteWriter) => {
 		var octaveIndex = keyCodeOctaveIndexes[e.keyCode];
 
 		if (octaveIndex !== undefined) {
-			console.log('octave_change')
-			noteWriter.trigger('octave_change', octaveIndex)
+			socket.emit('octave_change', {octaveIndex: octaveIndex})
 		}
 	})
 
@@ -76,42 +93,21 @@ const triggerEvents = (noteWriter) => {
 		var octaveUpKeyCode = 221
 		var octaveDownKeyCode = 219
 
-		var config = noteWriter.getConfig()
-
-		var currentKey = config.key;
-		var currentOctave = config.octave
-		var newKey, newOctave
-
 		if (e.keyCode === pitchUpKeyCode) {
-			newKey = constrainValue(currentKey + 1, noteWriter.minKey, noteWriter.maxKey);
-			noteWriter.trigger('key_change', newKey)
+			socket.emit('increment_key')
 		}
 
 		if (e.keyCode === pitchDownKeyCode) {
-			newKey = constrainValue(currentKey - 1, currentKey + 1, noteWriter.minKey, noteWriter.maxKey);
-			noteWriter.trigger('key_change', newKey)
+			socket.emit('decrement_key')
 		}
 
 		if (e.keyCode === octaveUpKeyCode) {
-			newOctave = constrainValue(currentOctave + 1, noteWriter.minOctave, noteWriter.maxOctave)
-			noteWriter.trigger('octave_change', newOctave)
+			socket.emit('increment_octave')
 		}
 
 		if (e.keyCode === octaveDownKeyCode) {
-			newOctave = constrainValue(currentOctave - 1, noteWriter.minOctave, noteWriter.maxOctave)
-			noteWriter.trigger('octave_change', newOctave)
+			socket.emit('decrement_octave')
 		}
-	})
-
-	document.addEventListener('keyup', function(e) {
-		var buttonIndex = keyCodeButtonIndexes[e.keyCode]
-		var positionIndex = keyCodePositionIndexes[e.keyCode];
-
-		if (buttonIndex !== undefined) {
-			noteWriter.trigger('note_button_up', buttonIndex)
-			return;
-		}
-
 	})
 
 	function constrainValue(value, min, max) {
