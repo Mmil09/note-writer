@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "ignore": ["./node_modules", "./src/frontend", "./src/views"]
+  "ignore": ["./node_modules", "./src/frontend", "./src/views", "./src/public"]
 }

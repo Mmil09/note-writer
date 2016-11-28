@@ -43,16 +43,19 @@ const keyCodeOctaveIndexes = {
 	// 77: 7, //m key
 }
 
-const keyboardBindings = (socket) => {
+function keyboardBindings() {
+
+	var self = this;
+	var socket = this.socket;
 
 	document.addEventListener('keydown', function(e) {
 		var buttonIndex = keyCodeButtonIndexes[e.keyCode]
-		
+
 		if (buttonIndex !== undefined) {
 			socket.emit('note_button_down', {
 				noteButtonIndex: buttonIndex,
-				velocity: 64,
-				channel: 1,
+				velocity: self.state.velocity,
+				channel: self.state.channel,
 			})
 		}
 	})
@@ -64,8 +67,8 @@ const keyboardBindings = (socket) => {
 		if (buttonIndex !== undefined) {
 			socket.emit('note_button_up', {
 				noteButtonIndex: buttonIndex,
-				velocity: 64,
-				channel: 1,
+				velocity: self.state.velocity,
+				channel: self.state.channel,
 			})
 			return;
 		}

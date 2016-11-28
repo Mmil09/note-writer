@@ -9,9 +9,6 @@ var getOffsetFromDegreeInScale = utils.getOffsetFromDegreeInScale
 
 var eventListeners = {};
 var eventListenerIndex = 0;
-var numOfNoteButtons = 9;
-var primaryNoteButtonRange = [0, 7]
-var bassNoteButtonRange = [8, 8];
 
 const defaultConfig = {
 	octave: 5,
@@ -26,7 +23,8 @@ const defaultConfig = {
 	maxKey: 11,
 	minOctave: 1,
 	maxOctave: 8,
-
+	primaryNoteButtonRange: [0, 7],
+	bassNoteButtonRange: [8, 8],
 }
 
 function valueIsInRange(value, range) {
@@ -48,14 +46,19 @@ function notifyEventListeners(eventType, data) {
 class NoteWriter {
 
 	constructor(options) {
+		var numOfNoteButtons = 9;
 		this.config = Object.assign({}, defaultConfig)
 		this.previousConfig = {};
-		this.noteButtons = new Array(numOfNoteButtons);
+		this.noteButtons = [];
 		this.setupInitialNoteButtons()
 	}
 
 	setupInitialNoteButtons() {
-		for (var i = 0; i < this.noteButtons.length; i++) {
+		for (var i = this.config.primaryNoteButtonRange[0]; i <= this.config.primaryNoteButtonRange[1]; i++) {		
+			this.noteButtons[i] = new NoteButton()
+		}
+
+		for (var i = this.config.bassNoteButtonRange[0]; i <= this.config.bassNoteButtonRange[1]; i++) {
 			this.noteButtons[i] = new NoteButton()
 		}
 
@@ -74,12 +77,22 @@ class NoteWriter {
 		degreeIndex = mode + position; //0 based degree
 		startValue = key + (octave * 12); //value assuming 0 offset/position
 
-		for (var i = primaryNoteButtonRange[0]; i <= primaryNoteButtonRange[1]; i++) {
+		for (var i = this.config.primaryNoteButtonRange[0]; i <= this.config.primaryNoteButtonRange[1]; i++) {
 			var noteButton = this.noteButtons[i]
 			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
 			noteButton.noteValue = startValue + offset;
-			noteButton.degreeIndex = degreeIndex
-			noteButton.degree = degreeIndex + 1;
+			noteButton.degreeIndex = degreeIndex - mode
+			noteButton.degree = noteButton.degreeIndex + 1;
+			if (noteButton.degree > scale.spacing.length) {
+
+				var numOfScaleTraversals = Math.floor(noteButton.degree/(scale.spacing.length));
+				var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length)
+				var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex
+				noteButton.relativeDegree = relativeDegree
+			}
+			else {
+				noteButton.relativeDegree = noteButton.degree
+			}
 			noteButton.noteDisplay = getNoteNameFromValue(noteButton.noteValue, octave, offset)
 			degreeIndex++;			
 		}
@@ -87,12 +100,12 @@ class NoteWriter {
 		degreeIndex = mode + position; //0 based degree
 		startValue = key + ((octave - 1) * 12); //value assuming 0 offset/position
 
-		for (var i = bassNoteButtonRange[0]; i <= bassNoteButtonRange[1]; i++) {
+		for (var i = this.config.bassNoteButtonRange[0]; i <= this.config.bassNoteButtonRange[1]; i++) {
 			var noteButton = this.noteButtons[i]
 			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
 			noteButton.noteValue = startValue + offset;
-			noteButton.degreeIndex = degreeIndex
-			noteButton.degree = degreeIndex + 1;
+			noteButton.degreeIndex = degreeIndex - mode
+			noteButton.degree = noteButton.degreeIndex + 1;
 			noteButton.noteDisplay = getNoteNameFromValue(noteButton.noteValue, (octave - 1), offset)
 			degreeIndex++;
 		}
@@ -264,11 +277,13 @@ class NoteWriter {
 				var onNoteData = Object.assign({}, noteButton, {noteButtonIndex: i})
 				
 				//trigger note off
-				this.setNote(false, offNoteData)
+				this.setNote(false, offNoteData, false)
 				//trigger note on with new note
-				this.setNote(true, onNoteData)
+				this.setNote(true, onNoteData, false)
 			}
 		}
+
+		notifyEventListeners('note_buttons_change', Object.assign([], this.noteButtons))
 	}
 
 /**
@@ -331,8 +346,12 @@ class NoteWriter {
  * @param {number} noteData.channel
  * @param {number} noteData.velocity
  * @param {string} noteData.noteDisplay
+ * @param {boolean} notifyNoteButtonChange
  */
-	setNote(on, noteData) {
+	setNote(on, noteData, notifyNoteButtonChange) {
+
+		var shouldNotifyNoteButtonChange = notifyNoteButtonChange === false ? false : true;
+
 		var requiredKeys = [
 			'noteButtonIndex',
 			'degreeIndex',
@@ -350,11 +369,15 @@ class NoteWriter {
 		})		
 		
 		if (on) {
-			notifyEventListeners('note_buttons_change', Object.assign([], this.noteButtons))
+			if (shouldNotifyNoteButtonChange) {
+				notifyEventListeners('note_buttons_change', Object.assign([], this.noteButtons))
+			}
 			notifyEventListeners('note_on', noteData)
 		}
 		else {
-			notifyEventListeners('note_buttons_change', Object.assign([], this.noteButtons))
+			if (shouldNotifyNoteButtonChange) {
+				notifyEventListeners('note_buttons_change', Object.assign([], this.noteButtons))
+			}
 			notifyEventListeners('note_off', noteData)	
 		}
 	}

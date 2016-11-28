@@ -5,6 +5,9 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import TopBar from './TopBar'
 import BottomBar from './BottomBar'
 
+import keyboardBindings from '../scripts/keyboardBindings'
+import synth from '../scripts/synth'
+
 const SIZES = {
   normal: {
     width: 800,
@@ -16,8 +19,19 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
 
+    this.socket = null;
+
     this.state = {
       size: {...SIZES.normal},
+      config: props.initialConfig || {},
+      noteButtons: props.initialNoteButtons || [],
+      synthSettings: {
+        enabled: true,
+        type: 'sawtooth',
+      },
+      velocity: 86,
+      channel: 1,
+
     }
 
     this.handlePositionChange = this._handlePositionChange.bind(this)
@@ -25,31 +39,80 @@ export default class App extends React.Component {
     this.handleModeChange = this._handleModeChange.bind(this)
     this.handleOctaveChange = this._handleOctaveChange.bind(this)
     this.handleKeyChange = this._handleKeyChange.bind(this)
+    this.handleToggleSynth = this._handleToggleSynth.bind(this)
+  }
+
+  componentDidMount() {
+    var self = this;
+
+    this.socket = window.io(this.props.socketUrl)
+
+    keyboardBindings.call(self)
+
+    this.socket.on('note_buttons_change', function(noteButtons) {
+      self.setState({
+        noteButtons: noteButtons
+      })
+    })
+
+    this.socket.on('config_change', function(config) {
+      self.setState({
+        config: config
+      })
+    })
+
+    this.socket.on('note_on', function(noteData) {
+      if (self.state.synthSettings.enabled) {
+        synth.playOscillator(noteData)
+      }
+      
+    })
+
+    this.socket.on('note_off', function(noteData) {
+      if (self.state.synthSettings.enabled) {
+        synth.stopOscillator(noteData)
+      }
+    })
+
   }
 
   _handlePositionChange(newPosition) {
-    this.props.noteWriter.trigger('position_change', newPosition)
+    this.socket.emit('position_change', newPosition)
   }
 
   _handleScaleChange(newScale) {
-    this.props.noteWriter.trigger('scale_change', newScale)
+    this.socket.emit('scale_change', newScale)
   }
 
   _handleModeChange(newMode) {
-    this.props.noteWriter.trigger('mode_change', newMode)
+    this.socket.emit('mode_change', newMode)
   }
 
   _handleOctaveChange(newOctave) {
-    this.props.noteWriter.trigger('octave_change', newOctave)
+    this.socket.emit('octave_change', newOctave)
   }
 
   _handleKeyChange(newKey) {
-    this.props.noteWriter.trigger('key_change', newKey)
+    this.socket.emit('key_change', newKey)
+  }
+
+  _handleToggleSynth() {
+    var newEnabledState = !this.state.synthSettings.enabled;
+    
+    if (!newEnabledState) {
+      synth.stopAllOscillators()
+    }
+
+    this.setState({
+      synthSettings: {
+        ...this.state.synthSettings,
+        enabled: newEnabledState,
+      }
+    })
   }
 
   render() {
-    let {size} = this.state
-    let {config, noteButtons} = this.props;
+    let {size, config, noteButtons} = this.state
 
     var style = {
       width: `${size.width}px`,
@@ -60,11 +123,13 @@ export default class App extends React.Component {
       <MuiThemeProvider>
       	<div className="App" style={style}>
           
-          <TopBar/>
+          <TopBar config={config}/>
 
           <div className="Middle">
             <ButtonContainer 
               noteButtons={noteButtons}
+              primaryNoteButtonRange={config.primaryNoteButtonRange}
+              bassNoteButtonRange={config.bassNoteButtonRange}
             />
 
             <ConfigContainer 
@@ -85,7 +150,7 @@ export default class App extends React.Component {
             />
           </div>
 
-          <BottomBar/>
+          {false && <BottomBar/>}
         
         </div>
       </MuiThemeProvider>
