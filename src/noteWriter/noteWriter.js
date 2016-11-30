@@ -6,13 +6,16 @@ var scales = require('./scales')
 var utils = require('./utils')
 var getNoteNameFromValue = utils.getNoteNameFromValue
 var getOffsetFromDegreeInScale = utils.getOffsetFromDegreeInScale
+var isActionRequired = utils.isActionRequired;
+var midi = require('./midi')
+var midiNotes = midi.midiNotes
 
 var eventListeners = {};
 var eventListenerIndex = 0;
 
 const defaultConfig = {
 	octave: 5,
-	position: 0, 
+	position: -1, 
 	mode: 0,
 	scale: scales['major'],
 	key: notes['C'],
@@ -66,18 +69,28 @@ class NoteWriter {
 	}
 
 	setNoteButtonValues() {
+
+		this.setNoteButtonValuesInRange(this.config.primaryNoteButtonRange[0], this.config.primaryNoteButtonRange[1], 0)
+		this.setNoteButtonValuesInRange(this.config.bassNoteButtonRange[0], this.config.bassNoteButtonRange[1], -1)
+	}
+
+	setNoteButtonValuesInRange(startIndex, endIndex, octaveOffset) {
 		var key = this.config.key,
 		 octave = this.config.octave, 
 		 position = this.config.position,
 		 mode = this.config.mode,
 		 scale = this.config.scale;
+		 
+		if (typeof octaveOffset === 'undefined') {
+			octaveOffset = 0;
+		}
 
 		var degreeIndex, startValue
 
 		degreeIndex = mode + position; //0 based degree
-		startValue = key + (octave * 12); //value assuming 0 offset/position
+		startValue = key + ((octave + octaveOffset) * 12); //value assuming 0 offset/position
 
-		for (var i = this.config.primaryNoteButtonRange[0]; i <= this.config.primaryNoteButtonRange[1]; i++) {
+		for (var i = startIndex; i <= endIndex; i++) {
 			var noteButton = this.noteButtons[i]
 			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
 			noteButton.noteValue = startValue + offset;
@@ -93,23 +106,10 @@ class NoteWriter {
 			else {
 				noteButton.relativeDegree = noteButton.degree
 			}
-			noteButton.noteDisplay = getNoteNameFromValue(noteButton.noteValue, octave, offset)
+
+			noteButton.noteDisplay = midiNotes[noteButton.noteValue]
 			degreeIndex++;			
 		}
-
-		degreeIndex = mode + position; //0 based degree
-		startValue = key + ((octave - 1) * 12); //value assuming 0 offset/position
-
-		for (var i = this.config.bassNoteButtonRange[0]; i <= this.config.bassNoteButtonRange[1]; i++) {
-			var noteButton = this.noteButtons[i]
-			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
-			noteButton.noteValue = startValue + offset;
-			noteButton.degreeIndex = degreeIndex - mode
-			noteButton.degree = noteButton.degreeIndex + 1;
-			noteButton.noteDisplay = getNoteNameFromValue(noteButton.noteValue, (octave - 1), offset)
-			degreeIndex++;
-		}
-
 	}
 
 	on(event, callback) {
@@ -130,6 +130,10 @@ class NoteWriter {
 	trigger(action, data) {
 		var self = this;
 
+		if (!isActionRequired.call(self, action, data)) {
+			return
+		}
+
 		//check for note button actions
 		switch(action) {
 			case 'note_button_down':
@@ -140,56 +144,6 @@ class NoteWriter {
 				self.handleNoteButtonUp(data)
 				return;
 		}
-
-		//check for cases that do not require any action
-		switch(action) {
-			case 'key_change':
-				if (this.config.key === data) {
-					return;
-				}
-				break;
-			case 'scale_change':
-				if (this.config.scale.name === data) {
-					return;
-				}
-				break;
-			case 'octave_change':
-				if (this.config.octave === data) {
-					return;
-				}
-				break;
-			case 'position_change':
-				if (this.config.position === data) {
-					return;
-				}
-				break;
-			case 'mode_change':
-				if (this.config.mode === data) {
-					return;
-				}
-				break;
-			case 'increment_key':
-				if (this.config.key + 1 > this.config.maxKey) {
-					return;
-				}
-				break;
-			case 'decrement_key':
-				if (this.config.key - 1 < this.config.minKey) {
-					return;
-				}
-				break;
-			case 'increment_octave':
-				if (this.config.octave + 1 > this.config.maxOctave) {
-					return;
-				}
-				break;
-			case 'decrement_octave':
-				if (this.config.octave - 1 < this.config.minOctave) {
-					return;
-				}
-				break;
-		}
-
 
 		this.savePreviousConfigAndButtons();
 
@@ -221,6 +175,12 @@ class NoteWriter {
 				break;
 			case 'decrement_octave':
 				this.handleOctaveChange(this.config.octave - 1)
+				break;
+			case 'increment_position':
+				this.handlePositionChange(this.config.position + 1)
+				break;
+			case 'decrement_position':
+				this.handlePositionChange(this.config.position - 1)
 				break;
 		}
 

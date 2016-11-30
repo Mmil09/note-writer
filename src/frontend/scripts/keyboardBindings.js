@@ -91,17 +91,17 @@ function keyboardBindings() {
 	})
 
 	document.addEventListener('keydown', function(e) {
-		var pitchUpKeyCode = 187
-		var pitchDownKeyCode = 189
-		var octaveUpKeyCode = 221
-		var octaveDownKeyCode = 219
+		var octaveUpKeyCode = 187
+		var octaveDownKeyCode = 189
+		var positionUpKeyCode = 221
+		var positionDownKeyCode = 219
 
-		if (e.keyCode === pitchUpKeyCode) {
-			socket.emit('increment_key')
+		if (e.keyCode === positionUpKeyCode) {
+			socket.emit('increment_position')
 		}
 
-		if (e.keyCode === pitchDownKeyCode) {
-			socket.emit('decrement_key')
+		if (e.keyCode === positionDownKeyCode) {
+			socket.emit('decrement_position')
 		}
 
 		if (e.keyCode === octaveUpKeyCode) {

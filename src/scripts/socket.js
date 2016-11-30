@@ -55,6 +55,14 @@ function setupSocketIncoming(socket) {
   socket.on('decrement_octave', function() {
   	noteWriter.trigger('decrement_octave')
   })
+
+   socket.on('increment_position', function() {
+  	noteWriter.trigger('increment_position')
+  })
+
+  socket.on('decrement_position', function() {
+  	noteWriter.trigger('decrement_position')
+  })
 }
 
 function setupSocketOutgoing(socket) {
