@@ -22,10 +22,10 @@ function getReverseScaleSpacing(scale) {
 }
 
 function getOffsetFromDegreeInScale(degreeIndex, scale) {
-	var spacingLength = scale.spacing.length;
+	var spacingLength = scale.spacingLength;
 	var index = Math.abs(degreeIndex); //degreeIndex is zero based
 	var absOffset, adjustedIndex, numOfScaleIntervals;
-	var scaleSpacing = degreeIndex < 0 ? getReverseScaleSpacing(scale) : scale.spacing
+	var scaleSpacing = degreeIndex < 0 ? scale.spacingDescending : scale.spacingAscending
 	//console.log(scaleSpacing)
 	if (index < spacingLength) {
 		absOffset = scaleSpacing[index]
@@ -42,6 +42,34 @@ function getOffsetFromDegreeInScale(degreeIndex, scale) {
 		else {
 			return absOffset
 		}
+}
+
+function getDegreeFromDegreeIndex(degreeIndex, scale) {
+
+	var adjustedAbsoluteDegree;
+	var degree;
+
+	console.log(degreeIndex)
+
+	if (degreeIndex < 0) {
+		adjustedAbsoluteDegree = degreeIndex + 1;
+	}
+	else {
+		adjustedAbsoluteDegree = Math.abs(degreeIndex - 1)
+	}
+
+	if (adjustedAbsoluteDegree > scale.spacingLength) {
+		var numOfScaleTraversals = Math.floor(adjustedAbsoluteDegree/(scale.spacingLength));
+		degree = 2
+	}
+	else if (degreeIndex < 0) {
+		degree = adjustedAbsoluteDegree = scale.spacingLength - adjustedAbsoluteDegree
+	}
+	else {
+		degree = adjustedAbsoluteDegree
+	}
+
+	return degree
 }
 
 function isActionRequired(action, data) {
@@ -107,3 +135,4 @@ function isActionRequired(action, data) {
 
 module.exports.getOffsetFromDegreeInScale = getOffsetFromDegreeInScale
 module.exports.isActionRequired = isActionRequired
+module.exports.getDegreeFromDegreeIndex = getDegreeFromDegreeIndex

@@ -94,19 +94,21 @@ class NoteWriter {
 			var noteButton = this.noteButtons[i]
 			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
 			noteButton.noteValue = startValue + offset;
+			//since the mode was added to get the value, it needs to be subtracted to 
+			//display the degree index with mode taken into account
 			noteButton.degreeIndex = degreeIndex - mode
-			noteButton.degree = noteButton.degreeIndex + 1;
-			if (noteButton.degree > scale.spacing.length) {
+			
+			// if (noteButton.degree > scale.spacing.length) {
 
-				var numOfScaleTraversals = Math.floor(noteButton.degree/(scale.spacing.length));
-				var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length)
-				var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex
-				noteButton.relativeDegree = relativeDegree
-			}
-			else {
-				noteButton.relativeDegree = noteButton.degree
-			}
-
+			// 	var numOfScaleTraversals = Math.floor(noteButton.degree/(scale.spacing.length));
+			// 	var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length)
+			// 	var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex
+			// 	noteButton.relativeDegree = relativeDegree
+			// }
+			// else {
+			// 	noteButton.relativeDegree = noteButton.degree
+			// }
+			noteButton.degree = noteButton.relativeDegree = utils.getDegreeFromDegreeIndex(noteButton.degreeIndex, scale)	
 			noteButton.noteDisplay = midiNotes[noteButton.noteValue]
 			degreeIndex++;			
 		}

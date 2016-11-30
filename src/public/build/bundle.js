@@ -22410,18 +22410,21 @@
 					var noteButton = this.noteButtons[i];
 					var offset = getOffsetFromDegreeInScale(degreeIndex, scale);
 					noteButton.noteValue = startValue + offset;
+					//since the mode was added to get the value, it needs to be subtracted to 
+					//display the degree index with mode taken into account
 					noteButton.degreeIndex = degreeIndex - mode;
-					noteButton.degree = noteButton.degreeIndex + 1;
-					if (noteButton.degree > scale.spacing.length) {
 
-						var numOfScaleTraversals = Math.floor(noteButton.degree / scale.spacing.length);
-						var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length);
-						var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex;
-						noteButton.relativeDegree = relativeDegree;
-					} else {
-						noteButton.relativeDegree = noteButton.degree;
-					}
+					// if (noteButton.degree > scale.spacing.length) {
 
+					// 	var numOfScaleTraversals = Math.floor(noteButton.degree/(scale.spacing.length));
+					// 	var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length)
+					// 	var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex
+					// 	noteButton.relativeDegree = relativeDegree
+					// }
+					// else {
+					// 	noteButton.relativeDegree = noteButton.degree
+					// }
+					noteButton.degree = noteButton.relativeDegree = utils.getDegreeFromDegreeIndex(noteButton.degreeIndex, scale);
 					noteButton.noteDisplay = midiNotes[noteButton.noteValue];
 					degreeIndex++;
 				}
@@ -22726,10 +22729,10 @@
 	}
 
 	function getOffsetFromDegreeInScale(degreeIndex, scale) {
-		var spacingLength = scale.spacing.length;
+		var spacingLength = scale.spacingLength;
 		var index = Math.abs(degreeIndex); //degreeIndex is zero based
 		var absOffset, adjustedIndex, numOfScaleIntervals;
-		var scaleSpacing = degreeIndex < 0 ? getReverseScaleSpacing(scale) : scale.spacing;
+		var scaleSpacing = degreeIndex < 0 ? scale.spacingDescending : scale.spacingAscending;
 		//console.log(scaleSpacing)
 		if (index < spacingLength) {
 			absOffset = scaleSpacing[index];
@@ -22744,6 +22747,31 @@
 		} else {
 			return absOffset;
 		}
+	}
+
+	function getDegreeFromDegreeIndex(degreeIndex, scale) {
+
+		var adjustedAbsoluteDegree;
+		var degree;
+
+		console.log(degreeIndex);
+
+		if (degreeIndex < 0) {
+			adjustedAbsoluteDegree = degreeIndex + 1;
+		} else {
+			adjustedAbsoluteDegree = Math.abs(degreeIndex - 1);
+		}
+
+		if (adjustedAbsoluteDegree > scale.spacingLength) {
+			var numOfScaleTraversals = Math.floor(adjustedAbsoluteDegree / scale.spacingLength);
+			degree = 2;
+		} else if (degreeIndex < 0) {
+			degree = adjustedAbsoluteDegree = scale.spacingLength - adjustedAbsoluteDegree;
+		} else {
+			degree = adjustedAbsoluteDegree;
+		}
+
+		return degree;
 	}
 
 	function isActionRequired(action, data) {
@@ -22809,6 +22837,7 @@
 
 	module.exports.getOffsetFromDegreeInScale = getOffsetFromDegreeInScale;
 	module.exports.isActionRequired = isActionRequired;
+	module.exports.getDegreeFromDegreeIndex = getDegreeFromDegreeIndex;
 
 /***/ },
 /* 192 */
@@ -39927,13 +39956,40 @@
 
 	'use strict';
 
-	module.exports = {
+	var scales = {
 		'major': {
 			name: 'major/minor',
 			spacing: [0, 2, 4, 5, 7, 9, 11],
+			spacingAscending: [0, 2, 4, 5, 7, 9, 11],
 			intervalLength: 12
 		}
 	};
+
+	for (scale in scales) {
+		var scale = scales[scale];
+		scale.spacingDescending = getReverseScaleSpacing(scale);
+		scale.spacingLength = scale.spacingAscending.length;
+	}
+
+	function getReverseScaleSpacing(scale) {
+		var reverseSpacing = [];
+
+		var descendingIndex = scale.spacing.length - 1;
+		var ascendingIndex = 0;
+
+		while (descendingIndex >= 0) {
+			reverseSpacing[ascendingIndex] = scale.intervalLength - scale.spacing[descendingIndex];
+			ascendingIndex++;
+			descendingIndex--;
+		}
+
+		reverseSpacing.unshift(0);
+		reverseSpacing.pop();
+
+		return reverseSpacing;
+	}
+
+	module.exports = scales;
 
 /***/ },
 /* 196 */
