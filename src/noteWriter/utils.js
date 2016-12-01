@@ -1,39 +1,20 @@
 'use strict';
 
-var _ = require('lodash')
 var notes = require('./notes')
-
-function getReverseScaleSpacing(scale) {
-	var reverseSpacing = [];
-
-	var descendingIndex = scale.spacing.length - 1
-	var ascendingIndex = 0;
-
-	while (descendingIndex >= 0) {
-		reverseSpacing[ascendingIndex] = scale.intervalLength - scale.spacing[descendingIndex]
-		ascendingIndex++;
-		descendingIndex--;		
-	}
-
-	reverseSpacing.unshift(0)
-	reverseSpacing.pop()
-
-	return reverseSpacing
-}
 
 function getOffsetFromDegreeInScale(degreeIndex, scale) {
 	var spacingLength = scale.spacingLength;
 	var index = Math.abs(degreeIndex); //degreeIndex is zero based
-	var absOffset, adjustedIndex, numOfScaleIntervals;
+	var absOffset, adjustedIndex, numOfScaleTraversals;
 	var scaleSpacing = degreeIndex < 0 ? scale.spacingDescending : scale.spacingAscending
 	//console.log(scaleSpacing)
 	if (index < spacingLength) {
 		absOffset = scaleSpacing[index]
 	}
 	else if (index % spacingLength >= 0) {
-		numOfScaleIntervals = Math.floor(index/spacingLength)
+		numOfScaleTraversals = Math.floor(index/spacingLength)
 		adjustedIndex = index % spacingLength
-		absOffset = (scale.intervalLength * numOfScaleIntervals) + scaleSpacing[adjustedIndex]
+		absOffset = (scale.intervalLength * numOfScaleTraversals) + scaleSpacing[adjustedIndex]
 	}
 
 		if (degreeIndex < 0) {
@@ -44,31 +25,23 @@ function getOffsetFromDegreeInScale(degreeIndex, scale) {
 		}
 }
 
-function getDegreeFromDegreeIndex(degreeIndex, scale) {
-
-	var adjustedAbsoluteDegree;
+function relativeDegreeFromDegreeIndex(degreeIndex, scale) {
+	var absoluteDegreeIndex = Math.abs(degreeIndex)
+	var numOfScaleTraversals = Math.floor(absoluteDegreeIndex/scale.spacingLength)
+	var adjustedDegree = absoluteDegreeIndex - (numOfScaleTraversals * scale.spacingLength)
+	
 	var degree;
 
-	console.log(degreeIndex)
-
-	if (degreeIndex < 0) {
-		adjustedAbsoluteDegree = degreeIndex + 1;
-	}
-	else {
-		adjustedAbsoluteDegree = Math.abs(degreeIndex - 1)
-	}
-
-	if (adjustedAbsoluteDegree > scale.spacingLength) {
-		var numOfScaleTraversals = Math.floor(adjustedAbsoluteDegree/(scale.spacingLength));
-		degree = 2
+	if (adjustedDegree === 0) {
+		degree = 1
 	}
 	else if (degreeIndex < 0) {
-		degree = adjustedAbsoluteDegree = scale.spacingLength - adjustedAbsoluteDegree
-	}
+		degree = (scale.spacingLength - adjustedDegree) + 1
+	} 
 	else {
-		degree = adjustedAbsoluteDegree
+		degree = adjustedDegree + 1
 	}
-
+	
 	return degree
 }
 
@@ -135,4 +108,4 @@ function isActionRequired(action, data) {
 
 module.exports.getOffsetFromDegreeInScale = getOffsetFromDegreeInScale
 module.exports.isActionRequired = isActionRequired
-module.exports.getDegreeFromDegreeIndex = getDegreeFromDegreeIndex
+module.exports.relativeDegreeFromDegreeIndex = relativeDegreeFromDegreeIndex

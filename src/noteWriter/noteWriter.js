@@ -15,7 +15,7 @@ var eventListenerIndex = 0;
 
 const defaultConfig = {
 	octave: 5,
-	position: -1, 
+	position: 0, 
 	mode: 0,
 	scale: scales['major'],
 	key: notes['C'],
@@ -94,21 +94,11 @@ class NoteWriter {
 			var noteButton = this.noteButtons[i]
 			var offset = getOffsetFromDegreeInScale(degreeIndex, scale)
 			noteButton.noteValue = startValue + offset;
-			//since the mode was added to get the value, it needs to be subtracted to 
+			//since the mode was added to get the note alue, it needs to be subtracted to 
 			//display the degree index with mode taken into account
 			noteButton.degreeIndex = degreeIndex - mode
-			
-			// if (noteButton.degree > scale.spacing.length) {
-
-			// 	var numOfScaleTraversals = Math.floor(noteButton.degree/(scale.spacing.length));
-			// 	var relativeDegreeIndex = noteButton.degree % (numOfScaleTraversals * scale.spacing.length)
-			// 	var relativeDegree = relativeDegreeIndex === 0 ? scale.spacing.length : relativeDegreeIndex
-			// 	noteButton.relativeDegree = relativeDegree
-			// }
-			// else {
-			// 	noteButton.relativeDegree = noteButton.degree
-			// }
-			noteButton.degree = noteButton.relativeDegree = utils.getDegreeFromDegreeIndex(noteButton.degreeIndex, scale)	
+			noteButton.degree = noteButton.degreeIndex < 0 ? noteButton.degreeIndex - 1 : noteButton.degreeIndex + 1;
+			noteButton.relativeDegree = utils.relativeDegreeFromDegreeIndex(noteButton.degreeIndex, scale)	
 			noteButton.noteDisplay = midiNotes[noteButton.noteValue]
 			degreeIndex++;			
 		}
