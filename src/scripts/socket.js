@@ -36,8 +36,16 @@ function setupSocketIncoming(socket) {
   	noteWriter.trigger('position_change', data.positionIndex)
   });
 
-  socket.on('octave_change', function(data) {
-  	noteWriter.trigger('octave_change', data.octaveIndex)
+   socket.on('key_change', function(newKey) {
+  	noteWriter.trigger('key_change', newKey)
+  })
+
+  socket.on('octave_change', function(newOctave) {
+  	noteWriter.trigger('octave_change', newOctave)
+  })
+
+  socket.on('mode_change', function(newMode) {
+  	noteWriter.trigger('mode_change', newMode)
   })
 
   socket.on('increment_key', function() {

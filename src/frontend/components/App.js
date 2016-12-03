@@ -40,6 +40,7 @@ export default class App extends React.Component {
     this.handleOctaveChange = this._handleOctaveChange.bind(this)
     this.handleKeyChange = this._handleKeyChange.bind(this)
     this.handleToggleSynth = this._handleToggleSynth.bind(this)
+    this.handleConfigChange = this._handleConfigChange.bind(this)
   }
 
   componentDidMount() {
@@ -56,6 +57,7 @@ export default class App extends React.Component {
     })
 
     this.socket.on('config_change', function(config) {
+      console.log('new config', config)
       self.setState({
         config: config
       })
@@ -111,6 +113,24 @@ export default class App extends React.Component {
     })
   }
 
+  _handleConfigChange(configKey, newValue) {
+
+    switch(configKey) {
+      case 'scale':
+        this._handleScaleChange(newValue)
+        break;
+      case 'key':
+        this._handleKeyChange(newValue)
+        break;
+      case 'mode':
+        this._handleModeChange(newValue)
+        break;
+      case 'octave':
+        this._handleOctaveChange(newValue)
+        break;
+    }
+  }
+
   render() {
     let {size, config, noteButtons} = this.state
 
@@ -123,7 +143,7 @@ export default class App extends React.Component {
       <MuiThemeProvider>
       	<div className="App" style={style}>
           
-          <TopBar config={config}/>
+          <TopBar config={config} onConfigChange={this.handleConfigChange}/>
 
           <div className="Middle">
             <ButtonContainer 
@@ -132,6 +152,19 @@ export default class App extends React.Component {
               bassNoteButtonRange={config.bassNoteButtonRange}
             />
 
+
+          </div>
+
+          {false && <BottomBar/>}
+        
+        </div>
+      </MuiThemeProvider>
+     
+    );
+  }
+}
+
+/*
             <ConfigContainer 
               config={config}
               minOctave={config.minOctave}
@@ -148,13 +181,4 @@ export default class App extends React.Component {
               onKeyChange={this.props.onKeyChange}
               onOctaveChange={this.props.onOctaveChange}
             />
-          </div>
-
-          {false && <BottomBar/>}
-        
-        </div>
-      </MuiThemeProvider>
-     
-    );
-  }
-}
+            */

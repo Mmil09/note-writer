@@ -1,16 +1,7 @@
 import React from 'react';
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton';
-import FontIcon from 'material-ui/FontIcon';
-import NavigationExpandMoreIcon from 'material-ui/svg-icons/navigation/expand-more';
-import MenuItem from 'material-ui/MenuItem';
-import DropDownMenu from 'material-ui/DropDownMenu';
-import RaisedButton from 'material-ui/RaisedButton';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
-import Slider from 'material-ui/Slider';
-import Popover from 'material-ui/Popover';
-import SelectField from 'material-ui/SelectField';
-
+//import {ButtonGroup, Button, DropdownButton, Grid, Row, Col, MenuItem} from 'react-bootstrap/lib';
+import Dropdown from 'react-dropdown'
+import {DropDownMenu, MenuItem} from 'material-ui'
 import {scales, notes, modes} from 'noteWriter'
 
 export default class ToolbarExamplesSimple extends React.Component {
@@ -18,6 +9,7 @@ export default class ToolbarExamplesSimple extends React.Component {
   constructor(props) {
     super(props);
 
+    this.onSelect = this._onSelect.bind(this)
   }
 
   _getScaleMenuItems() {
@@ -30,6 +22,8 @@ export default class ToolbarExamplesSimple extends React.Component {
       return (
         <MenuItem value={scale.name} key={index} primaryText={scale.name} />
       )
+
+      return {value: scaleLabel, label: scaleLabel } 
     })
 
     return scaleMenuItems
@@ -45,6 +39,8 @@ export default class ToolbarExamplesSimple extends React.Component {
       return (
         <MenuItem value={note} key={index} primaryText={noteLabel} />
       )
+
+      return {value: index, label: noteLabel }
     })
 
     return keyMenuItems
@@ -53,71 +49,102 @@ export default class ToolbarExamplesSimple extends React.Component {
   _getModeMenuItems() {
     var modeLabels = Object.keys(modes);
 
-    var modeMenuItems = modeLabels.map((modeLabel, index) => {
-      
-      let mode = modes[modeLabel]
-      
+    var modeMenuItems = this.props.config.scale.spacing.map( (degree, index) => {
       return (
-        <MenuItem value={mode} key={index} primaryText={modeLabel + '(+' + mode + ')'} />
-      )
+        <MenuItem value={index} key={index} primaryText={index + 1}/>
+      )    
+
+      return {value: index, label: String(index + 1) } 
     })
 
     return modeMenuItems
   }
 
+  _onSelect(configKey, e, index, value) {
+    this.props.onConfigChange(configKey, value)
+  }
+
   render() {
 
+    var labelStyle = {color: '#fff'}
+
     return (
-      <Toolbar className="TopBar" style={{backgroundColor: 'rgb(0, 188, 212)'}}>
-         <ToolbarTitle text="Note Writer" color="#fff"/>
-
-          <ToolbarGroup>
-            
-            <SelectField
-              floatingLabelText="Key"
-              value={this.props.config.key}
-            >
-              { this._getKeyMenuItems() }
-            </SelectField>
-            <SelectField
-              floatingLabelText="Scale"
-              value={this.props.config.scale.name}
-            >
-              { this._getScaleMenuItems() }  
-            </SelectField>
-
-            <SelectField
-              floatingLabelText="Mode"
-              value={this.props.config.mode}
-            >
-              { this._getModeMenuItems() }
-            </SelectField>
+      <div className="TopBar">
+        <DropdownContainer label="Scale">
+          <DropDownMenu value={this.props.config.scale.name} onChange={this.onSelect.bind(this, 'scale')} labelStyle={{color: '#fff'}}>
+            {this._getScaleMenuItems()}
+          </DropDownMenu>
+        </DropdownContainer>
+        
+        <DropdownContainer label="Key">
+          <DropDownMenu value={this.props.config.key} onChange={this.onSelect.bind(this, 'key')} labelStyle={{color: '#fff'}}>
+            {this._getKeyMenuItems()}
+          </DropDownMenu>
+        </DropdownContainer>
           
-          </ToolbarGroup>
-
-      </Toolbar>
+        
+        <DropdownContainer label="Mode">
+          <DropDownMenu value={this.props.config.mode} onChange={this.onSelect.bind(this, 'mode')} labelStyle={{color: '#fff'}}>
+            {this._getModeMenuItems()}
+          </DropDownMenu>
+        </DropdownContainer>
+        
+        
+        
+      </div>
     );
   }
+
+  // render() {
+
+  //   return (
+  //     <Toolbar className="TopBar" style={{backgroundColor: 'rgb(0, 188, 212)'}}>
+  //        <ToolbarTitle color="#fff"/>
+
+  //         <ToolbarGroup className="toolbar">
+            
+  //           <SelectField
+  //             className="toolbar-select key"
+  //             floatingLabelText="Key"
+  //             value={this.props.config.key}
+  //           >
+  //             { this._getKeyMenuItems() }
+  //           </SelectField>
+  //           <SelectField
+  //             className="toolbar-select scale"
+  //             floatingLabelText="Scale"
+  //             value={this.props.config.scale.name}
+  //           >
+  //             { this._getScaleMenuItems() }  
+  //           </SelectField>
+
+  //           <SelectField
+  //             className="toolbar-select mode"
+  //             floatingLabelText="Mode"
+  //             value={this.props.config.mode}
+  //           >
+  //             { this._getModeMenuItems() }
+  //           </SelectField>
+          
+  //         </ToolbarGroup>
+
+  //     </Toolbar>
+  //   );
+  // }
 }
 
 
+const DropdownContainer = (props) => {
+  let {
+    label,
+    children
+  } = props
 
-/*
 
-          <ToolbarGroup>
-            <IconButton onTouchTap={this.handleTouchTap}>
-              <NavigationExpandMoreIcon />
-            </IconButton>
-            <Popover
-              open={this.state.menuOpen}
-              anchorEl={this.state.anchorEl}
-              anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-              targetOrigin={{horizontal: 'left', vertical: 'top'}}
-              onRequestClose={this.handleRequestClose}
-            >
-              <Slider step={0.10} value={0.5} />
-
-            </Popover>
-          </ToolbarGroup>
-
-*/
+  return (
+    <div className="DropdownContainer">
+      <label>{label}</label>
+      {children}
+    </div>
+  )
+}
