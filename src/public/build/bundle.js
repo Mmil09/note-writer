@@ -21795,6 +21795,10 @@
 
 	var _ButtonContainer2 = _interopRequireDefault(_ButtonContainer);
 
+	var _PositionGridContainer = __webpack_require__(838);
+
+	var _PositionGridContainer2 = _interopRequireDefault(_PositionGridContainer);
+
 	var _ConfigContainer = __webpack_require__(187);
 
 	var _ConfigContainer2 = _interopRequireDefault(_ConfigContainer);
@@ -21853,6 +21857,7 @@
 	        type: 'sawtooth'
 	      },
 	      velocity: 86,
+	      velocityVariance: 0,
 	      channel: 1
 
 	    };
@@ -21864,6 +21869,8 @@
 	    _this.handleKeyChange = _this._handleKeyChange.bind(_this);
 	    _this.handleToggleSynth = _this._handleToggleSynth.bind(_this);
 	    _this.handleConfigChange = _this._handleConfigChange.bind(_this);
+	    _this.handleVelocityChange = _this._handleVelocityChange.bind(_this);
+	    _this.handleVelocityVarianceChange = _this._handleVelocityVarianceChange.bind(_this);
 	    return _this;
 	  }
 
@@ -21900,6 +21907,12 @@
 	          _synth2.default.stopOscillator(noteData);
 	        }
 	      });
+
+	      this.socket.on('note_buttons_change', function (noteButtons) {
+	        self.setState({
+	          noteButtons: noteButtons
+	        });
+	      });
 	    }
 	  }, {
 	    key: '_handlePositionChange',
@@ -21925,6 +21938,20 @@
 	    key: '_handleKeyChange',
 	    value: function _handleKeyChange(newKey) {
 	      this.socket.emit('key_change', newKey);
+	    }
+	  }, {
+	    key: '_handleVelocityChange',
+	    value: function _handleVelocityChange(e, newValue) {
+	      this.setState({
+	        velocity: newValue
+	      });
+	    }
+	  }, {
+	    key: '_handleVelocityVarianceChange',
+	    value: function _handleVelocityVarianceChange(e, newValue) {
+	      this.setState({
+	        velocityVariance: newValue
+	      });
 	    }
 	  }, {
 	    key: '_handleToggleSynth',
@@ -21980,7 +22007,14 @@
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'App', style: style },
-	          _react2.default.createElement(_TopBar2.default, { config: config, onConfigChange: this.handleConfigChange }),
+	          _react2.default.createElement(_TopBar2.default, {
+	            config: config,
+	            onConfigChange: this.handleConfigChange,
+	            velocity: this.state.velocity,
+	            velocityVariance: this.state.velocityVariance,
+	            onVelocityChange: this.handleVelocityChange,
+	            onVelocityVarianceChange: this.handleVelocityVarianceChange
+	          }),
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'Middle' },
@@ -21988,6 +22022,9 @@
 	              noteButtons: noteButtons,
 	              primaryNoteButtonRange: config.primaryNoteButtonRange,
 	              bassNoteButtonRange: config.bassNoteButtonRange
+	            }),
+	            _react2.default.createElement(_PositionGridContainer2.default, {
+	              position: config.position
 	            })
 	          ),
 	          false && _react2.default.createElement(_BottomBar2.default, null)
@@ -22064,23 +22101,19 @@
 	      _react2.default.createElement(
 	        'span',
 	        { className: 'degree' },
-	        noteButton.relativeDegree
+	        i + 1
 	      ),
 	      _react2.default.createElement(
 	        'span',
 	        { className: 'absolute-degree' },
-	        noteButton.degree
+	        noteButton.noteDisplay
 	      ),
 	      _react2.default.createElement(
 	        'span',
 	        { className: 'midi-value' },
 	        noteButton.noteValue
 	      ),
-	      _react2.default.createElement(
-	        'span',
-	        { className: 'noteName' },
-	        noteButton.noteDisplay
-	      )
+	      _react2.default.createElement('span', { className: 'noteName' })
 	    ));
 	  }
 
@@ -22130,11 +22163,6 @@
 	      'div',
 	      { className: 'ButtonContainer' },
 	      primaryNoteButtons
-	    ),
-	    _react2.default.createElement(
-	      'div',
-	      { className: 'ButtonContainer' },
-	      bassNoteButtons
 	    )
 	  );
 	};
@@ -23017,6 +23045,10 @@
 
 	var _materialUi = __webpack_require__(658);
 
+	var _arrowDropDown = __webpack_require__(751);
+
+	var _arrowDropDown2 = _interopRequireDefault(_arrowDropDown);
+
 	var _noteWriter = __webpack_require__(188);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -23036,6 +23068,11 @@
 	    _classCallCheck(this, ToolbarExamplesSimple);
 
 	    var _this = _possibleConstructorReturn(this, (ToolbarExamplesSimple.__proto__ || Object.getPrototypeOf(ToolbarExamplesSimple)).call(this, props));
+
+	    _this.state = {
+	      open: false,
+	      anchorEl: null
+	    };
 
 	    _this.onSelect = _this._onSelect.bind(_this);
 	    return _this;
@@ -23087,86 +23124,87 @@
 	      return modeMenuItems;
 	    }
 	  }, {
+	    key: '_getOctaveMenuItems',
+	    value: function _getOctaveMenuItems() {
+	      var octaveMenuItems = [];
+
+	      for (var index = this.props.config.minOctave; index <= this.props.config.maxOctave; index++) {
+	        octaveMenuItems.push(_react2.default.createElement(_materialUi.MenuItem, { value: index, key: index, primaryText: index + 1 }));
+	      }
+
+	      return octaveMenuItems;
+	    }
+	  }, {
 	    key: '_onSelect',
-	    value: function _onSelect(configKey, e, index, value) {
+	    value: function _onSelect(configKey, e, value) {
 	      this.props.onConfigChange(configKey, value);
+	    }
+	  }, {
+	    key: '_handleTouchTap',
+	    value: function _handleTouchTap(event) {
+	      // This prevents ghost click.
+	      event.preventDefault();
+
+	      this.setState({
+	        open: true,
+	        anchorEl: event.currentTarget
+	      });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-
-	      var labelStyle = { color: '#fff' };
 
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'TopBar' },
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Scale' },
+	          { label: 'Scale', currentValue: this.props.config.scale.name },
 	          _react2.default.createElement(
-	            _materialUi.DropDownMenu,
-	            { value: this.props.config.scale.name, onChange: this.onSelect.bind(this, 'scale'), labelStyle: { color: '#fff' } },
+	            _materialUi.Menu,
+	            { value: this.props.config.scale.name, onChange: this.onSelect.bind(this, 'scale') },
 	            this._getScaleMenuItems()
 	          )
 	        ),
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Key' },
+	          { label: 'Key', currentValue: this.props.config.key },
 	          _react2.default.createElement(
-	            _materialUi.DropDownMenu,
-	            { value: this.props.config.key, onChange: this.onSelect.bind(this, 'key'), labelStyle: { color: '#fff' } },
+	            _materialUi.Menu,
+	            { value: this.props.config.key, onChange: this.onSelect.bind(this, 'key') },
 	            this._getKeyMenuItems()
 	          )
 	        ),
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Mode' },
+	          { label: 'Mode', currentValue: this.props.config.mode },
 	          _react2.default.createElement(
-	            _materialUi.DropDownMenu,
-	            { value: this.props.config.mode, onChange: this.onSelect.bind(this, 'mode'), labelStyle: { color: '#fff' } },
+	            _materialUi.Menu,
+	            { value: this.props.config.mode, onChange: this.onSelect.bind(this, 'mode') },
 	            this._getModeMenuItems()
+	          )
+	        ),
+	        _react2.default.createElement(
+	          DropdownContainer,
+	          { label: 'Octave', currentValue: this.props.config.octave },
+	          _react2.default.createElement(
+	            _materialUi.Menu,
+	            { value: this.props.config.octave, onChange: this.onSelect.bind(this, 'octave') },
+	            this._getOctaveMenuItems()
+	          )
+	        ),
+	        _react2.default.createElement(
+	          DropdownContainer,
+	          { label: 'Velocity', currentValue: String(this.props.velocity + ' +/- ' + this.props.velocityVariance) },
+	          _react2.default.createElement(
+	            'div',
+	            { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'row', width: '200px', height: '300px' } },
+	            _react2.default.createElement(_materialUi.Slider, { style: { height: 200 }, axis: 'y', min: 0, max: 127, onChange: this.props.onVelocityChange, step: 1, value: this.props.velocity }),
+	            _react2.default.createElement(_materialUi.Slider, { style: { height: 200 }, axis: 'y', min: 0, max: 50, onChange: this.props.onVelocityVarianceChange, step: 1, value: this.props.velocityVariance })
 	          )
 	        )
 	      );
 	    }
-
-	    // render() {
-
-	    //   return (
-	    //     <Toolbar className="TopBar" style={{backgroundColor: 'rgb(0, 188, 212)'}}>
-	    //        <ToolbarTitle color="#fff"/>
-
-	    //         <ToolbarGroup className="toolbar">
-
-	    //           <SelectField
-	    //             className="toolbar-select key"
-	    //             floatingLabelText="Key"
-	    //             value={this.props.config.key}
-	    //           >
-	    //             { this._getKeyMenuItems() }
-	    //           </SelectField>
-	    //           <SelectField
-	    //             className="toolbar-select scale"
-	    //             floatingLabelText="Scale"
-	    //             value={this.props.config.scale.name}
-	    //           >
-	    //             { this._getScaleMenuItems() }  
-	    //           </SelectField>
-
-	    //           <SelectField
-	    //             className="toolbar-select mode"
-	    //             floatingLabelText="Mode"
-	    //             value={this.props.config.mode}
-	    //           >
-	    //             { this._getModeMenuItems() }
-	    //           </SelectField>
-
-	    //         </ToolbarGroup>
-
-	    //     </Toolbar>
-	    //   );
-	    // }
-
 	  }]);
 
 	  return ToolbarExamplesSimple;
@@ -23174,23 +23212,81 @@
 
 	exports.default = ToolbarExamplesSimple;
 
+	var DropdownContainer = function (_React$Component2) {
+	  _inherits(DropdownContainer, _React$Component2);
 
-	var DropdownContainer = function DropdownContainer(props) {
-	  var label = props.label,
-	      children = props.children;
+	  function DropdownContainer(props) {
+	    _classCallCheck(this, DropdownContainer);
+
+	    var _this2 = _possibleConstructorReturn(this, (DropdownContainer.__proto__ || Object.getPrototypeOf(DropdownContainer)).call(this, props));
+
+	    _this2.state = {
+	      open: false,
+	      anchorEl: null
+	    };
+	    _this2.handleTouchTap = _this2._handleTouchTap.bind(_this2);
+	    _this2.handleRequestClose = _this2._handleRequestClose.bind(_this2);
+	    return _this2;
+	  }
+
+	  _createClass(DropdownContainer, [{
+	    key: '_handleTouchTap',
+	    value: function _handleTouchTap(event) {
+	      // This prevents ghost click.
+	      event.preventDefault();
+
+	      this.setState({
+	        open: true,
+	        anchorEl: event.currentTarget
+	      });
+	    }
+	  }, {
+	    key: '_handleRequestClose',
+	    value: function _handleRequestClose() {
+	      this.setState({
+	        open: false
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _props = this.props,
+	          label = _props.label,
+	          children = _props.children,
+	          currentValue = _props.currentValue;
 
 
-	  return _react2.default.createElement(
-	    'div',
-	    { className: 'DropdownContainer' },
-	    _react2.default.createElement(
-	      'label',
-	      null,
-	      label
-	    ),
-	    children
-	  );
-	};
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'DropdownContainer', ref: this.handleRef },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'dropdown-label' },
+	          label
+	        ),
+	        _react2.default.createElement(
+	          _materialUi.FlatButton,
+	          { className: 'dropdown-button', onTouchTap: this.handleTouchTap },
+	          currentValue,
+	          _react2.default.createElement(_arrowDropDown2.default, null)
+	        ),
+	        _react2.default.createElement(
+	          _materialUi.Popover,
+	          {
+	            open: this.state.open,
+	            anchorEl: this.state.anchorEl,
+	            anchorOrigin: { horizontal: 'left', vertical: 'bottom' },
+	            targetOrigin: { horizontal: 'left', vertical: 'top' },
+	            onRequestClose: this.handleRequestClose
+	          },
+	          children
+	        )
+	      );
+	    }
+	  }]);
+
+	  return DropdownContainer;
+	}(_react2.default.Component);
 
 /***/ },
 /* 197 */,
@@ -30551,7 +30647,7 @@
 
 
 	// module
-	exports.push([module.id, "body,\nhtml {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  font-family: 'Roboto';\n}\n#root {\n  display: block;\n  position: relative;\n  width: 100%;\n  height: 100%;\n}\n.App {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  border: 1px solid #ddd;\n  background-color: #f0f0f0;\n  margin: 0 auto;\n  margin-top: 10px;\n}\n.BottomBar,\n.TopBar {\n  width: 100%;\n  flex-grow: 0;\n}\n.TopBar {\n  width: 100%;\n  display: flex;\n  height: 70px;\n  background-color: #4285f4;\n}\n.TopBar .DropdownContainer label {\n  display: block;\n  color: #fff;\n  position: relative;\n  top: 5px;\n  padding-left: 20px;\n}\n.TopBar .toolbar-select {\n  flex-shrink: 1;\n}\n.TopBar .toolbar-select.key,\n.TopBar .toolbar-select.mode {\n  width: 100px;\n}\n.Middle {\n  padding: 10px;\n  flex-grow: 1;\n  display: flex;\n}\n.NoteButtonContainer {\n  display: block;\n  width: 100%;\n}\n.ButtonContainer {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  justify-content: center;\n}\n.NoteButton {\n  display: flex;\n  cursor: pointer;\n  height: 100px;\n  width: 85px;\n  flex-grow: 1;\n  margin: 5px;\n  border: 1px solid #000;\n  color: #333;\n  background-color: #4285f4;\n  border-radius: 2px;\n  transform: scale3d(1, 1, 1);\n  justify-content: center;\n  align-items: center;\n  box-shadow: 4px 4px 4px rgba(0,0,0,0.25);\n  transition: all 0.2s ease;\n}\n.NoteButton.active {\n  color: #000;\n/* box-shadow: inset 4px 4px 4px rgba(0,0,0,0.25) */\n  background-color: rgba(66,133,244,0.4);\n  -webkit-animation-name: pulse;\n  -webkit-animation-duration: 0.3s;\n  -webkit-animation-iteration-count: infinite;\n}\n.NoteButton .degree {\n  font-size: 25px;\n}\n.NoteButton .noteName {\n  position: absolute;\n  top: 0;\n  right: 5px;\n}\n.NoteButton .absolute-degree {\n  position: absolute;\n  bottom: 0;\n  right: 5px;\n}\n.NoteButton .midi-value {\n  position: absolute;\n  bottom: 0;\n  left: 5px;\n}\n@-webkit-keyframes pulse {\n  from {\n    -webkit-transform: scale(1);\n  }\n  50% {\n    -webkit-transform: scale(1.03);\n  }\n  to {\n    -webkit-transform: scale(1);\n  }\n}\n.Dropdown-root {\n  position: relative;\n}\n.Dropdown-control {\n  position: relative;\n  overflow: hidden;\n  background-color: #fff;\n  border: 1px solid #ccc;\n  border-radius: 2px;\n  box-sizing: border-box;\n  color: #333;\n  cursor: default;\n  outline: none;\n  padding: 8px 52px 8px 10px;\n  transition: all 200ms ease;\n}\n.Dropdown-control:hover {\n  box-shadow: 0 1px 0 rgba(0,0,0,0.06);\n}\n.Dropdown-arrow {\n  border-color: #999 transparent transparent;\n  border-style: solid;\n  border-width: 5px 5px 0;\n  content: ' ';\n  display: block;\n  height: 0;\n  margin-top: -ceil(2.5);\n  position: absolute;\n  right: 10px;\n  top: 14px;\n  width: 0;\n}\n.is-open .Dropdown-arrow {\n  border-color: transparent transparent #999;\n  border-width: 0 5px 5px;\n}\n.Dropdown-menu {\n  background-color: #fff;\n  border: 1px solid #ccc;\n  box-shadow: 0 1px 0 rgba(0,0,0,0.06);\n  box-sizing: border-box;\n  margin-top: -1px;\n  max-height: 200px;\n  overflow-y: auto;\n  position: absolute;\n  top: 100%;\n  width: 100%;\n  z-index: 1000;\n  -webkit-overflow-scrolling: touch;\n}\n.Dropdown-menu .Dropdown-group > .Dropdown-title {\n  padding: 8px 10px;\n  color: #333;\n  font-weight: bold;\n  text-transform: capitalize;\n}\n.Dropdown-option {\n  box-sizing: border-box;\n  color: rgba(51,51,51,0.8);\n  cursor: pointer;\n  display: block;\n  padding: 8px 10px;\n}\n.Dropdown-option:last-child {\n  border-bottom-right-radius: 2px;\n  border-bottom-left-radius: 2px;\n}\n.Dropdown-option:hover {\n  background-color: #f2f9fc;\n  color: #333;\n}\n.Dropdown-option.is-selected {\n  background-color: #f2f9fc;\n  color: #333;\n}\n.Dropdown-noresults {\n  box-sizing: border-box;\n  color: #ccc;\n  cursor: default;\n  display: block;\n  padding: 8px 10px;\n}\n", ""]);
+	exports.push([module.id, "body,\nhtml {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  font-family: 'Roboto';\n}\n#root {\n  display: block;\n  position: relative;\n  width: 100%;\n  height: 100%;\n}\n.App {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  border: 1px solid #ddd;\n  background-color: #f0f0f0;\n  margin: 0 auto;\n  margin-top: 10px;\n}\n.BottomBar,\n.TopBar {\n  width: 100%;\n  flex-grow: 0;\n}\n.TopBar {\n  width: 100%;\n  display: flex;\n  box-sizing: border-box;\n  padding: 10px;\n  padding-bottom: 0px;\n  background-color: #4285f4;\n  box-shadow: 0px 5px 5px rgba(1,1,1,0.4);\n}\n.TopBar .DropdownContainer {\n  display: block;\n  position: relative;\n}\n.TopBar .DropdownContainer .dropdown-label {\n  display: block;\n  text-align: center;\n  color: #000;\n  width: 100%;\n}\n.TopBar .DropdownContainer .dropdown-button {\n  color: #fff !important;\n}\n.TopBar .DropdownContainer svg {\n  fill: #fff !important;\n  position: relative;\n  top: 6px;\n}\n.Middle {\n  padding: 10px;\n  flex-grow: 1;\n}\n.NoteButtonContainer {\n  display: block;\n  width: 100%;\n}\n.ButtonContainer {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  justify-content: center;\n}\n.NoteButton {\n  display: flex;\n  cursor: pointer;\n  height: 100px;\n  width: 85px;\n  flex-grow: 1;\n  margin: 5px;\n  border: 1px solid #000;\n  color: #333;\n  background-color: #4285f4;\n  border-radius: 2px;\n  transform: scale3d(1, 1, 1);\n  justify-content: center;\n  align-items: center;\n  box-shadow: 4px 4px 4px rgba(0,0,0,0.25);\n  transition: all 0.2s ease;\n}\n.NoteButton.active {\n  color: #000;\n/* box-shadow: inset 4px 4px 4px rgba(0,0,0,0.25) */\n  background-color: rgba(66,133,244,0.4);\n  -webkit-animation-name: pulse;\n  -webkit-animation-duration: 0.3s;\n  -webkit-animation-iteration-count: infinite;\n}\n.NoteButton .degree {\n  font-size: 25px;\n}\n.NoteButton .noteName {\n  position: absolute;\n  top: 0;\n  right: 5px;\n}\n.NoteButton .absolute-degree {\n  position: absolute;\n  bottom: 0;\n  right: 5px;\n}\n.NoteButton .midi-value {\n  position: absolute;\n  bottom: 0;\n  left: 5px;\n}\n@-webkit-keyframes pulse {\n  from {\n    -webkit-transform: scale(1);\n  }\n  50% {\n    -webkit-transform: scale(1.03);\n  }\n  to {\n    -webkit-transform: scale(1);\n  }\n}\n.grid {\n  display: flex;\n  box-sizing: border-box;\n  width: 100%;\n  height: 100px;\n}\n.grid .grid-item {\n  flex-grow: 1;\n  height: 100%;\n  border: 1px solid #000;\n  border-left: 0px;\n}\n.grid .grid-item:first-child {\n  border-left: 1px solid #000;\n}\n.grid .grid-item:last-child {\n  border-right: 1px solid #000;\n}\n.grid .grid-item.entered {\n  background-color: #f0f0f0;\n}\n.grid .active {\n  position: absolute;\n  border-radius: 100%;\n  width: 50px;\n  height: 50px;\n  background-color: #000;\n  transition: transform 0.1s linear;\n}\n", ""]);
 
 	// exports
 
@@ -65404,6 +65500,81 @@
 	};
 
 	module.exports = keyOf;
+
+/***/ },
+/* 837 */,
+/* 838 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var PositionGridContainer = function (_React$Component) {
+		_inherits(PositionGridContainer, _React$Component);
+
+		function PositionGridContainer() {
+			_classCallCheck(this, PositionGridContainer);
+
+			return _possibleConstructorReturn(this, (PositionGridContainer.__proto__ || Object.getPrototypeOf(PositionGridContainer)).apply(this, arguments));
+		}
+
+		_createClass(PositionGridContainer, [{
+			key: 'render',
+			value: function render() {
+
+				var numOfGridItems = 8;
+				var gridItems = [];
+
+				for (var i = 0; i < numOfGridItems; i++) {
+					gridItems.push(_react2.default.createElement(
+						'div',
+						{ className: 'grid-item', key: i },
+						i + 1
+					));
+				}
+
+				var xOffset = 20;
+				var yOffset = 25;
+				var position = this.props.position;
+				var x = position * 100 + xOffset;
+				var y = yOffset;
+				var xString = String(x + 'px');
+				var yString = String(y + 'px');
+
+				return _react2.default.createElement(
+					'div',
+					{ className: 'PositionGridContainer' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'grid' },
+						gridItems,
+						_react2.default.createElement('div', { className: 'active', style: { transform: 'translate3d(' + xString + ', ' + yString + ', 0px)' } })
+					)
+				);
+			}
+		}]);
+
+		return PositionGridContainer;
+	}(_react2.default.Component);
+
+	exports.default = PositionGridContainer;
 
 /***/ }
 /******/ ]);

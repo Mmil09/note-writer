@@ -29,31 +29,35 @@ body, html
 .TopBar
 	width: 100%
 	display: flex
-	height: 70px
+	box-sizing: border-box
+	padding: 10px
+	padding-bottom: 0px
 	background-color: rgba(66, 133, 244, 1)
+	box-shadow: 0px 5px 5px rgba(1,1,1,0.4)
 	
 	.DropdownContainer
+		display: block
+		position: relative
 		
-		label
+		.dropdown-label
 			display: block
-			color: #fff
-			position: relative
-			top: 5px
-			padding-left: 20px
-				
-	
-	.toolbar-select
-		flex-shrink: 1
+			text-align: center
+			color: #000
+			width: 100%
+			
+		.dropdown-button
+			color: #fff !important
 		
-		&.key, 
-		&.mode
-			width: 100px	
+		svg
+			fill: #fff !important
+			position: relative
+			top: 6px
+	
 
 
 .Middle 
 	padding: 10px
 	flex-grow: 1
-	display: flex
 
 
 .NoteButtonContainer 
@@ -120,85 +124,34 @@ body, html
 	
 	to  
 		-webkit-transform: scale(1.0)
+		
 
 
+.grid
+	display: flex
+	box-sizing: border-box
+	width: 100%
+	height: 100px
 
+	.grid-item
+		flex-grow: 1
+		height: 100%
+		border: 1px solid #000
+		border-left: 0px
 
-.Dropdown-root
-	position relative
+	.grid-item:first-child
+		border-left: 1px solid #000
 
-.Dropdown-control
-	position relative
-	overflow hidden
-	background-color white
-	border 1px solid #ccc
-	border-radius 2px
-	box-sizing border-box
-	color #333
-	cursor default
-	outline none
-	padding 8px 52px 8px 10px
-	transition all 200ms ease
-	&:hover
-			box-shadow 0 1px 0 rgba(0,0,0,0.06)
+	.grid-item:last-child
+		border-right: 1px solid #000
 
-.Dropdown-arrow
-	border-color #999 transparent transparent
-	border-style solid
-	border-width 5px 5px 0
-	content ' '
-	display block
-	height 0
-	margin-top -ceil(2.5)
-	position absolute
-	right 10px
-	top 14px
-	width 0
+	.grid-item.entered
+		background-color: #f0f0f0
 
-.is-open
-	.Dropdown-arrow
-		border-color transparent transparent #999
-		border-width 0 5px 5px
-
-.Dropdown-menu
-	background-color white
-	border 1px solid #ccc
-	box-shadow 0 1px 0 rgba(0,0,0,0.06)
-	box-sizing border-box
-	margin-top -1px
-	max-height 200px
-	overflow-y auto
-	position absolute
-	top 100%
-	width 100%
-	z-index 1000
-	-webkit-overflow-scrolling touch
-	.Dropdown-group
-			& > .Dropdown-title
-				padding 8px 10px
-				color rgba(51,51,51,1.2)
-				font-weight bold
-				text-transform capitalize
-
-.Dropdown-option
-	box-sizing border-box
-	color rgba(51,51,51,0.8)
-	cursor pointer
-	display block
-	padding 8px 10px
-	&:last-child
-		border-bottom-right-radius 2px
-		border-bottom-left-radius 2px
-	&:hover
-		background-color #f2f9fc
-		color #333
-	&.is-selected
-		background-color #f2f9fc
-		color #333
-
-.Dropdown-noresults
-	box-sizing border-box
-	color #ccc
-	cursor default
-	display block
-	padding 8px 10px
+	.active
+		position absolute
+		border-radius: 100%
+		width: 50px
+		height: 50px
+		background-color: #000
+		transition: transform .1s linear

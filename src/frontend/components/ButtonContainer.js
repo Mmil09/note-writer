@@ -20,10 +20,10 @@ const ButtonContainer = (props) => {
       <div 
         className={cx(classes)} 
         key={i}>
-          <span className="degree">{noteButton.relativeDegree}</span>
-          <span className="absolute-degree">{noteButton.degree}</span>
+          <span className="degree">{i + 1}</span>
+          <span className="absolute-degree">{noteButton.noteDisplay}</span>
           <span className="midi-value">{noteButton.noteValue}</span>
-          <span className="noteName">{noteButton.noteDisplay}</span>
+          <span className="noteName"></span>
       </div>
     )
 
@@ -51,7 +51,7 @@ const ButtonContainer = (props) => {
       </div>
     )
   }
-
+  
 
   return (
       <div className="NoteButtonContainer">
@@ -60,9 +60,7 @@ const ButtonContainer = (props) => {
           {primaryNoteButtons}
         </div>            
 
-        <div className="ButtonContainer">
-          {bassNoteButtons}
-        </div> 
+
         
       </div>
    

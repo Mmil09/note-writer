@@ -1,5 +1,6 @@
 import React from 'react';
 import ButtonContainer from './ButtonContainer'
+import PositionGridContainer from './PositionGridContainer'
 import ConfigContainer from './ConfigContainer'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import TopBar from './TopBar'
@@ -30,6 +31,7 @@ export default class App extends React.Component {
         type: 'sawtooth',
       },
       velocity: 86,
+      velocityVariance: 0,
       channel: 1,
 
     }
@@ -41,6 +43,8 @@ export default class App extends React.Component {
     this.handleKeyChange = this._handleKeyChange.bind(this)
     this.handleToggleSynth = this._handleToggleSynth.bind(this)
     this.handleConfigChange = this._handleConfigChange.bind(this)
+    this.handleVelocityChange = this._handleVelocityChange.bind(this)
+    this.handleVelocityVarianceChange = this._handleVelocityVarianceChange.bind(this)
   }
 
   componentDidMount() {
@@ -76,6 +80,12 @@ export default class App extends React.Component {
       }
     })
 
+    this.socket.on('note_buttons_change', function(noteButtons) {
+      self.setState({
+        noteButtons: noteButtons
+      })
+    })
+
   }
 
   _handlePositionChange(newPosition) {
@@ -96,6 +106,18 @@ export default class App extends React.Component {
 
   _handleKeyChange(newKey) {
     this.socket.emit('key_change', newKey)
+  }
+
+  _handleVelocityChange(e, newValue) {
+    this.setState({
+      velocity: newValue
+    })
+  }
+
+  _handleVelocityVarianceChange(e, newValue) {
+    this.setState({
+      velocityVariance: newValue
+    }) 
   }
 
   _handleToggleSynth() {
@@ -143,13 +165,25 @@ export default class App extends React.Component {
       <MuiThemeProvider>
       	<div className="App" style={style}>
           
-          <TopBar config={config} onConfigChange={this.handleConfigChange}/>
+          <TopBar 
+            config={config} 
+            onConfigChange={this.handleConfigChange}
+            velocity={this.state.velocity}
+            velocityVariance={this.state.velocityVariance}
+            onVelocityChange={this.handleVelocityChange}
+            onVelocityVarianceChange={this.handleVelocityVarianceChange}
+          />
 
           <div className="Middle">
+            
             <ButtonContainer 
               noteButtons={noteButtons}
               primaryNoteButtonRange={config.primaryNoteButtonRange}
               bassNoteButtonRange={config.bassNoteButtonRange}
+            />
+
+            <PositionGridContainer
+              position={config.position}
             />
 
 
