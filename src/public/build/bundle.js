@@ -21871,6 +21871,8 @@
 	    _this.handleConfigChange = _this._handleConfigChange.bind(_this);
 	    _this.handleVelocityChange = _this._handleVelocityChange.bind(_this);
 	    _this.handleVelocityVarianceChange = _this._handleVelocityVarianceChange.bind(_this);
+	    _this.handleButtonUp = _this._handleButtonUp.bind(_this);
+	    _this.handleButtonDown = _this._handleButtonDown.bind(_this);
 	    return _this;
 	  }
 
@@ -21890,7 +21892,6 @@
 	      });
 
 	      this.socket.on('config_change', function (config) {
-	        console.log('new config', config);
 	        self.setState({
 	          config: config
 	        });
@@ -21988,6 +21989,24 @@
 	      }
 	    }
 	  }, {
+	    key: '_handleButtonUp',
+	    value: function _handleButtonUp(noteButtonIndex) {
+	      this.socket.emit('note_button_up', {
+	        noteButtonIndex: noteButtonIndex,
+	        velocity: this.state.velocity,
+	        channel: this.state.channel
+	      });
+	    }
+	  }, {
+	    key: '_handleButtonDown',
+	    value: function _handleButtonDown(noteButtonIndex) {
+	      this.socket.emit('note_button_down', {
+	        noteButtonIndex: noteButtonIndex,
+	        velocity: this.state.velocity,
+	        channel: this.state.channel
+	      });
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _state = this.state,
@@ -22020,11 +22039,14 @@
 	            { className: 'Middle' },
 	            _react2.default.createElement(_ButtonContainer2.default, {
 	              noteButtons: noteButtons,
+	              onButtonDown: this.handleButtonDown,
+	              onButtonUp: this.handleButtonUp,
 	              primaryNoteButtonRange: config.primaryNoteButtonRange,
 	              bassNoteButtonRange: config.bassNoteButtonRange
 	            }),
 	            _react2.default.createElement(_PositionGridContainer2.default, {
-	              position: config.position
+	              position: config.position,
+	              onPositionEnter: this.handlePositionChange
 	            })
 	          ),
 	          false && _react2.default.createElement(_BottomBar2.default, null)
@@ -22078,10 +22100,31 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var mouseDownIndexes = [];
+	var mouseDown = false;
+
 	var ButtonContainer = function ButtonContainer(props) {
 
 	  var primaryNoteButtons = [];
 	  var bassNoteButtons = [];
+
+	  var handleMouseDown = function handleMouseDown(noteButtonIndex, isPushed) {
+	    mouseDown = true;
+	    props.onButtonDown(noteButtonIndex);
+	  };
+
+	  var handleMouseUp = function handleMouseUp(noteButtonIndex, isPushed) {
+	    mouseDown = false;
+	    props.onButtonUp(noteButtonIndex);
+	  };
+
+	  var handleMouseLeave = function handleMouseLeave(noteButtonIndex, isPushed) {
+	    console.log(mouseDown);
+	    if (mouseDown) {
+	      mouseDown = false;
+	      props.onButtonUp(noteButtonIndex);
+	    }
+	  };
 
 	  for (var i = props.primaryNoteButtonRange[0]; i <= props.primaryNoteButtonRange[1]; i++) {
 
@@ -22097,6 +22140,9 @@
 	      'div',
 	      {
 	        className: (0, _classnames2.default)(classes),
+	        onMouseDown: handleMouseDown.bind(null, i, noteButton.isPushed),
+	        onMouseUp: handleMouseUp.bind(null, i, noteButton.isPushed),
+	        onMouseLeave: handleMouseLeave.bind(null, i, noteButton.isPushed),
 	        key: i },
 	      _react2.default.createElement(
 	        'span',
@@ -23154,6 +23200,8 @@
 	    key: 'render',
 	    value: function render() {
 
+	      var noteLabels = Object.keys(_noteWriter.notes);
+
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'TopBar' },
@@ -23168,7 +23216,7 @@
 	        ),
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Key', currentValue: this.props.config.key },
+	          { label: 'Key', currentValue: noteLabels[this.props.config.key] },
 	          _react2.default.createElement(
 	            _materialUi.Menu,
 	            { value: this.props.config.key, onChange: this.onSelect.bind(this, 'key') },
@@ -23177,7 +23225,7 @@
 	        ),
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Mode', currentValue: this.props.config.mode },
+	          { label: 'Mode', currentValue: this.props.config.mode + 1 },
 	          _react2.default.createElement(
 	            _materialUi.Menu,
 	            { value: this.props.config.mode, onChange: this.onSelect.bind(this, 'mode') },
@@ -23186,7 +23234,7 @@
 	        ),
 	        _react2.default.createElement(
 	          DropdownContainer,
-	          { label: 'Octave', currentValue: this.props.config.octave },
+	          { label: 'Octave', currentValue: this.props.config.octave + 1 },
 	          _react2.default.createElement(
 	            _materialUi.Menu,
 	            { value: this.props.config.octave, onChange: this.onSelect.bind(this, 'octave') },
@@ -30502,7 +30550,7 @@
 			var positionIndex = keyCodePositionIndexes[e.keyCode];
 
 			if (positionIndex !== undefined) {
-				socket.emit('position_change', { positionIndex: positionIndex });
+				socket.emit('position_change', positionIndex);
 			}
 		});
 
@@ -30510,7 +30558,7 @@
 			var octaveIndex = keyCodeOctaveIndexes[e.keyCode];
 
 			if (octaveIndex !== undefined) {
-				socket.emit('octave_change', { octaveIndex: octaveIndex });
+				socket.emit('octave_change', octaveIndex);
 			}
 		});
 
@@ -30647,7 +30695,7 @@
 
 
 	// module
-	exports.push([module.id, "body,\nhtml {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  font-family: 'Roboto';\n}\n#root {\n  display: block;\n  position: relative;\n  width: 100%;\n  height: 100%;\n}\n.App {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  border: 1px solid #ddd;\n  background-color: #f0f0f0;\n  margin: 0 auto;\n  margin-top: 10px;\n}\n.BottomBar,\n.TopBar {\n  width: 100%;\n  flex-grow: 0;\n}\n.TopBar {\n  width: 100%;\n  display: flex;\n  box-sizing: border-box;\n  padding: 10px;\n  padding-bottom: 0px;\n  background-color: #4285f4;\n  box-shadow: 0px 5px 5px rgba(1,1,1,0.4);\n}\n.TopBar .DropdownContainer {\n  display: block;\n  position: relative;\n}\n.TopBar .DropdownContainer .dropdown-label {\n  display: block;\n  text-align: center;\n  color: #000;\n  width: 100%;\n}\n.TopBar .DropdownContainer .dropdown-button {\n  color: #fff !important;\n}\n.TopBar .DropdownContainer svg {\n  fill: #fff !important;\n  position: relative;\n  top: 6px;\n}\n.Middle {\n  padding: 10px;\n  flex-grow: 1;\n}\n.NoteButtonContainer {\n  display: block;\n  width: 100%;\n}\n.ButtonContainer {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  justify-content: center;\n}\n.NoteButton {\n  display: flex;\n  cursor: pointer;\n  height: 100px;\n  width: 85px;\n  flex-grow: 1;\n  margin: 5px;\n  border: 1px solid #000;\n  color: #333;\n  background-color: #4285f4;\n  border-radius: 2px;\n  transform: scale3d(1, 1, 1);\n  justify-content: center;\n  align-items: center;\n  box-shadow: 4px 4px 4px rgba(0,0,0,0.25);\n  transition: all 0.2s ease;\n}\n.NoteButton.active {\n  color: #000;\n/* box-shadow: inset 4px 4px 4px rgba(0,0,0,0.25) */\n  background-color: rgba(66,133,244,0.4);\n  -webkit-animation-name: pulse;\n  -webkit-animation-duration: 0.3s;\n  -webkit-animation-iteration-count: infinite;\n}\n.NoteButton .degree {\n  font-size: 25px;\n}\n.NoteButton .noteName {\n  position: absolute;\n  top: 0;\n  right: 5px;\n}\n.NoteButton .absolute-degree {\n  position: absolute;\n  bottom: 0;\n  right: 5px;\n}\n.NoteButton .midi-value {\n  position: absolute;\n  bottom: 0;\n  left: 5px;\n}\n@-webkit-keyframes pulse {\n  from {\n    -webkit-transform: scale(1);\n  }\n  50% {\n    -webkit-transform: scale(1.03);\n  }\n  to {\n    -webkit-transform: scale(1);\n  }\n}\n.grid {\n  display: flex;\n  box-sizing: border-box;\n  width: 100%;\n  height: 100px;\n}\n.grid .grid-item {\n  flex-grow: 1;\n  height: 100%;\n  border: 1px solid #000;\n  border-left: 0px;\n}\n.grid .grid-item:first-child {\n  border-left: 1px solid #000;\n}\n.grid .grid-item:last-child {\n  border-right: 1px solid #000;\n}\n.grid .grid-item.entered {\n  background-color: #f0f0f0;\n}\n.grid .active {\n  position: absolute;\n  border-radius: 100%;\n  width: 50px;\n  height: 50px;\n  background-color: #000;\n  transition: transform 0.1s linear;\n}\n", ""]);
+	exports.push([module.id, "body,\nhtml {\n  margin: 0;\n  width: 100%;\n  height: 100%;\n  font-family: 'Roboto';\n}\n#root {\n  display: block;\n  position: relative;\n  width: 100%;\n  height: 100%;\n}\n.App {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  border: 1px solid #ddd;\n  background-color: #f0f0f0;\n  margin: 0 auto;\n  margin-top: 10px;\n  user-select: none;\n}\n.BottomBar,\n.TopBar {\n  width: 100%;\n  flex-grow: 0;\n}\n.TopBar {\n  width: 100%;\n  display: flex;\n  box-sizing: border-box;\n  padding: 10px;\n  padding-bottom: 0px;\n  background-color: #4285f4;\n  box-shadow: 0px 5px 5px rgba(1,1,1,0.4);\n}\n.TopBar .DropdownContainer {\n  display: block;\n  position: relative;\n}\n.TopBar .DropdownContainer .dropdown-label {\n  display: block;\n  text-align: center;\n  color: #000;\n  width: 100%;\n}\n.TopBar .DropdownContainer .dropdown-button {\n  color: #fff !important;\n}\n.TopBar .DropdownContainer svg {\n  fill: #fff !important;\n  position: relative;\n  top: 6px;\n}\n.Middle {\n  padding: 10px;\n  flex-grow: 1;\n}\n.NoteButtonContainer {\n  display: block;\n  width: 100%;\n}\n.ButtonContainer {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  justify-content: center;\n}\n.NoteButton {\n  display: flex;\n  cursor: pointer;\n  height: 100px;\n  width: 85px;\n  flex-grow: 1;\n  margin: 5px;\n  color: #333;\n  background-color: #4285f4;\n  border-radius: 2px;\n  transform: scale3d(1, 1, 1);\n  justify-content: center;\n  align-items: center;\n  box-shadow: 2px 2px 2px rgba(0,0,0,0.25);\n  transition: all 0.2s ease;\n}\n.NoteButton.active {\n  color: #000;\n  font-weight: bold;\n/* box-shadow: inset 4px 4px 4px rgba(0,0,0,0.25) */\n  background-color: rgba(66,133,244,0.4);\n  -webkit-animation-name: pulse;\n  -webkit-animation-duration: 0.3s;\n  -webkit-animation-iteration-count: infinite;\n}\n.NoteButton .degree {\n  font-size: 25px;\n}\n.NoteButton .noteName {\n  position: absolute;\n  top: 0;\n  right: 5px;\n}\n.NoteButton .absolute-degree {\n  position: absolute;\n  bottom: 0;\n  right: 5px;\n}\n.NoteButton .midi-value {\n  position: absolute;\n  bottom: 0;\n  left: 5px;\n}\n@-webkit-keyframes pulse {\n  from {\n    -webkit-transform: scale(1.04);\n  }\n  50% {\n    -webkit-transform: scale(1.08);\n  }\n  to {\n    -webkit-transform: scale(1.04);\n  }\n}\n.PositionGridContainer {\n  margin-top: 20px;\n}\n.grid {\n  display: flex;\n  box-sizing: border-box;\n  width: 100%;\n  height: 50px;\n}\n.grid .grid-item {\n  flex-grow: 1;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 100%;\n  background-color: #ccc;\n  border: 1px solid #999;\n  border-left: 0px;\n  transition: all 0.2s ease;\n  transform: scale3d(1, 1, 1);\n  text-align: center;\n}\n.grid .grid-item:first-child {\n  border-left: 1px solid #999;\n  border-top-left-radius: 5px;\n  border-bottom-left-radius: 5px;\n}\n.grid .grid-item:last-child {\n  border-right: 1px solid #999;\n  border-top-right-radius: 5px;\n  border-bottom-right-radius: 5px;\n}\n.grid .grid-item.entered {\n  font-size: 20px;\n  font-weight: bold;\n  color: #000;\n  border-left: 1px solid #999;\n  background-color: #fff;\n  transform: scale3d(1.15, 1.15, 1);\n  z-index: 5;\n  box-shadow: 2px 2px 2px rgba(0,0,0,0.25);\n}\n", ""]);
 
 	// exports
 
@@ -65512,67 +65560,78 @@
 		value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 	var _react = __webpack_require__(2);
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _classnames = __webpack_require__(186);
+
+	var _classnames2 = _interopRequireDefault(_classnames);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var PositionGridContainer = function PositionGridContainer(props) {
 
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+		var handleMouseEnter = function handleMouseEnter(position, e) {
+			console.log(position);
+			props.onPositionEnter(position);
+		};
 
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+		var numOfGridItems = 8;
+		var gridItems = [];
 
-	var PositionGridContainer = function (_React$Component) {
-		_inherits(PositionGridContainer, _React$Component);
+		var xOffset = 20;
+		var yOffset = 25;
 
-		function PositionGridContainer() {
-			_classCallCheck(this, PositionGridContainer);
+		var absolutePosition = Math.abs(props.position);
+		var numOfTraversals = Math.floor(absolutePosition / numOfGridItems);
+		var relativePosition = absolutePosition - numOfTraversals * numOfGridItems;
+		var relativePositionReverse = relativePosition === 0 ? 0 : numOfGridItems - relativePosition;
 
-			return _possibleConstructorReturn(this, (PositionGridContainer.__proto__ || Object.getPrototypeOf(PositionGridContainer)).apply(this, arguments));
+		var gridPositionIndex = props.position >= 0 ? relativePosition : relativePositionReverse;
+
+		var startPositionLabel;
+
+		if (props.position < 0) {
+			if (relativePosition === 0) {
+				startPositionLabel = -((numOfTraversals - 1) * numOfGridItems + numOfGridItems);
+			} else {
+				startPositionLabel = -(numOfTraversals * numOfGridItems + numOfGridItems);
+			}
+		} else {
+			startPositionLabel = numOfTraversals * numOfGridItems;
 		}
 
-		_createClass(PositionGridContainer, [{
-			key: 'render',
-			value: function render() {
+		for (var i = 0; i < numOfGridItems; i++) {
+			var label = startPositionLabel + i;
 
-				var numOfGridItems = 8;
-				var gridItems = [];
+			var classes = {
+				'grid-item': true,
+				entered: gridPositionIndex === i
+			};
 
-				for (var i = 0; i < numOfGridItems; i++) {
-					gridItems.push(_react2.default.createElement(
-						'div',
-						{ className: 'grid-item', key: i },
-						i + 1
-					));
-				}
+			gridItems.push(_react2.default.createElement(
+				'div',
+				{ className: (0, _classnames2.default)(classes), key: i, onMouseEnter: handleMouseEnter.bind(null, startPositionLabel + i) },
+				label
+			));
+		}
 
-				var xOffset = 20;
-				var yOffset = 25;
-				var position = this.props.position;
-				var x = position * 100 + xOffset;
-				var y = yOffset;
-				var xString = String(x + 'px');
-				var yString = String(y + 'px');
+		var x = gridPositionIndex * 100 + xOffset;
+		var y = yOffset;
+		var xString = String(x + 'px');
+		var yString = String(y + 'px');
 
-				return _react2.default.createElement(
-					'div',
-					{ className: 'PositionGridContainer' },
-					_react2.default.createElement(
-						'div',
-						{ className: 'grid' },
-						gridItems,
-						_react2.default.createElement('div', { className: 'active', style: { transform: 'translate3d(' + xString + ', ' + yString + ', 0px)' } })
-					)
-				);
-			}
-		}]);
-
-		return PositionGridContainer;
-	}(_react2.default.Component);
+		return _react2.default.createElement(
+			'div',
+			{ className: 'PositionGridContainer' },
+			_react2.default.createElement(
+				'div',
+				{ className: 'grid' },
+				gridItems
+			)
+		);
+	};
 
 	exports.default = PositionGridContainer;
 

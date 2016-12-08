@@ -78,7 +78,7 @@ function keyboardBindings() {
 		var positionIndex = keyCodePositionIndexes[e.keyCode];
 
 		if (positionIndex !== undefined) {
-			socket.emit('position_change', {positionIndex: positionIndex})
+			socket.emit('position_change', positionIndex)
 		}
 	})
 
@@ -86,7 +86,7 @@ function keyboardBindings() {
 		var octaveIndex = keyCodeOctaveIndexes[e.keyCode];
 
 		if (octaveIndex !== undefined) {
-			socket.emit('octave_change', {octaveIndex: octaveIndex})
+			socket.emit('octave_change', octaveIndex)
 		}
 	})
 

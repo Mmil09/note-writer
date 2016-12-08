@@ -21,6 +21,7 @@ body, html
 	background-color: #f0f0f0
 	margin: 0 auto
 	margin-top: 10px
+	user-select: none
 
 .BottomBar, .TopBar 
 	width: 100%
@@ -79,18 +80,18 @@ body, html
 	width: 85px
 	flex-grow: 1
 	margin: 5px
-	border: 1px solid #000
 	color: #333
 	background-color: rgba(66, 133, 244, 1)
 	border-radius: 2px
 	transform: scale3d(1,1,1)
 	justify-content: center
 	align-items: center
-	box-shadow: 4px 4px 4px rgba(0,0,0,0.25)
+	box-shadow: 2px 2px 2px rgba(0,0,0,0.25)
 	transition: all .2s ease
 
 	&.active 
 		color: #000
+		font-weight: bold
 		/* box-shadow: inset 4px 4px 4px rgba(0,0,0,0.25) */
 		background-color: rgba(66, 133, 244, .4)
 		-webkit-animation-name: pulse 
@@ -117,41 +118,56 @@ body, html
 
 @-webkit-keyframes pulse 
 	from 
-		-webkit-transform: scale(1.0)
+		-webkit-transform: scale(1.04)
 	
 	50% 
-		-webkit-transform: scale(1.03)
+		-webkit-transform: scale(1.08)
 	
 	to  
-		-webkit-transform: scale(1.0)
+		-webkit-transform: scale(1.04)
 		
 
+
+.PositionGridContainer
+	margin-top: 20px
+
+gridBorderColor=#999
 
 .grid
 	display: flex
 	box-sizing: border-box
 	width: 100%
-	height: 100px
+	height: 50px
 
 	.grid-item
 		flex-grow: 1
+		display: flex
+		align-items: center
+		justify-content: center
 		height: 100%
-		border: 1px solid #000
+		background-color: #ccc
+		border: 1px solid gridBorderColor
 		border-left: 0px
+		transition: all .2s ease
+		transform: scale3d(1,1,1)
+		text-align: center
 
 	.grid-item:first-child
-		border-left: 1px solid #000
+		border-left: 1px solid gridBorderColor
+		border-top-left-radius: 5px
+		border-bottom-left-radius: 5px
 
 	.grid-item:last-child
-		border-right: 1px solid #000
+		border-right: 1px solid gridBorderColor
+		border-top-right-radius: 5px
+		border-bottom-right-radius: 5px
 
 	.grid-item.entered
-		background-color: #f0f0f0
-
-	.active
-		position absolute
-		border-radius: 100%
-		width: 50px
-		height: 50px
-		background-color: #000
-		transition: transform .1s linear
+		font-size: 20px
+		font-weight: bold
+		color: #000
+		border-left: 1px solid gridBorderColor
+		background-color: #fff
+		transform: scale3d(1.15, 1.15, 1)
+		z-index: 5
+		box-shadow: 2px 2px 2px rgba(0,0,0,0.25);

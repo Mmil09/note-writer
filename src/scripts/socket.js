@@ -32,8 +32,8 @@ function setupSocketIncoming(socket) {
     noteWriter.trigger('note_button_up', data)
   });
 
-  socket.on('position_change', function(data) {
-  	noteWriter.trigger('position_change', data.positionIndex)
+  socket.on('position_change', function(newPosition) {
+  	noteWriter.trigger('position_change', newPosition)
   });
 
    socket.on('key_change', function(newKey) {

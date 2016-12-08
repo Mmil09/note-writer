@@ -94,6 +94,8 @@ export default class ToolbarExamplesSimple extends React.Component {
 
   render() {
 
+    var noteLabels = Object.keys(notes);
+
     return (
       <div className="TopBar">
         <DropdownContainer label="Scale" currentValue={this.props.config.scale.name}>
@@ -102,20 +104,20 @@ export default class ToolbarExamplesSimple extends React.Component {
           </Menu>
         </DropdownContainer>
         
-        <DropdownContainer label="Key" currentValue={this.props.config.key}>
+        <DropdownContainer label="Key" currentValue={noteLabels[this.props.config.key]}>
           <Menu value={this.props.config.key} onChange={this.onSelect.bind(this, 'key')}>
             {this._getKeyMenuItems()}
           </Menu>
         </DropdownContainer>
           
         
-        <DropdownContainer label="Mode" currentValue={this.props.config.mode}>
+        <DropdownContainer label="Mode" currentValue={this.props.config.mode + 1}>
           <Menu value={this.props.config.mode} onChange={this.onSelect.bind(this, 'mode')}>
             {this._getModeMenuItems()}
           </Menu>
         </DropdownContainer>
 
-        <DropdownContainer label="Octave" currentValue={this.props.config.octave}>
+        <DropdownContainer label="Octave" currentValue={this.props.config.octave + 1}>
           <Menu value={this.props.config.octave} onChange={this.onSelect.bind(this, 'octave')}>
             {this._getOctaveMenuItems()}
           </Menu>

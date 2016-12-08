@@ -45,6 +45,8 @@ export default class App extends React.Component {
     this.handleConfigChange = this._handleConfigChange.bind(this)
     this.handleVelocityChange = this._handleVelocityChange.bind(this)
     this.handleVelocityVarianceChange = this._handleVelocityVarianceChange.bind(this)
+    this.handleButtonUp = this._handleButtonUp.bind(this)
+    this.handleButtonDown = this._handleButtonDown.bind(this)
   }
 
   componentDidMount() {
@@ -61,7 +63,6 @@ export default class App extends React.Component {
     })
 
     this.socket.on('config_change', function(config) {
-      console.log('new config', config)
       self.setState({
         config: config
       })
@@ -153,6 +154,22 @@ export default class App extends React.Component {
     }
   }
 
+  _handleButtonUp(noteButtonIndex) {
+    this.socket.emit('note_button_up', {
+      noteButtonIndex: noteButtonIndex,
+      velocity: this.state.velocity,
+      channel: this.state.channel,
+    })
+  }
+
+  _handleButtonDown(noteButtonIndex) {
+    this.socket.emit('note_button_down', {
+      noteButtonIndex: noteButtonIndex,
+      velocity: this.state.velocity,
+      channel: this.state.channel,
+    })
+  }
+
   render() {
     let {size, config, noteButtons} = this.state
 
@@ -178,12 +195,15 @@ export default class App extends React.Component {
             
             <ButtonContainer 
               noteButtons={noteButtons}
+              onButtonDown={this.handleButtonDown}
+              onButtonUp={this.handleButtonUp}
               primaryNoteButtonRange={config.primaryNoteButtonRange}
               bassNoteButtonRange={config.bassNoteButtonRange}
             />
 
             <PositionGridContainer
               position={config.position}
+              onPositionEnter={this.handlePositionChange}
             />
 
 
