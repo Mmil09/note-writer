@@ -20,7 +20,6 @@ const ButtonContainer = (props) => {
   }
 
   const handleMouseLeave = (noteButtonIndex, isPushed) => {
-    console.log(mouseDown)
     if (mouseDown) {
       mouseDown = false;
       props.onButtonUp(noteButtonIndex)

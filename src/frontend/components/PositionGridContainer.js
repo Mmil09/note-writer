@@ -4,8 +4,7 @@ import cx from 'classnames'
 const PositionGridContainer = (props) => {
 
 	const handleMouseEnter = (position, e) => {
-		console.log(position)
-		props.onPositionEnter(position)
+		//props.onPositionEnter(position)
 	}
 
 	var numOfGridItems = 8;

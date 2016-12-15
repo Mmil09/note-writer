@@ -16,6 +16,7 @@
     "babel-preset-stage-2": "^6.18.0",
     "classnames": "^2.2.5",
     "css-loader": "^0.26.0",
+    "electron-rebuild": "^1.4.0",
     "eslint": "^1.10.3",
     "eslint-plugin-react": "^3.6.2",
     "material-ui": "^0.16.4",
@@ -31,7 +32,6 @@
   },
   "dependencies": {
     "body-parser": "^1.1.2",
-    "bootstrap-styl": "^5.0.8",
     "easymidi": "0.0.2",
     "electron": "^1.4.11",
     "errorhandler": "^1.0.1",
@@ -39,9 +39,6 @@
     "jade": "^1.11.0",
     "lodash": "^4.17.2",
     "method-override": "^1.0.0",
-    "rc-slider": "^5.3.5",
-    "react-bootstrap": "^0.30.7",
-    "react-dropdown": "^1.2.0",
     "socket.io": "^1.6.0"
   },
   "browser": {

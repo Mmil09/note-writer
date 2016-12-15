@@ -29,6 +29,7 @@ export default class App extends React.Component {
       synthSettings: {
         enabled: true,
         type: 'sawtooth',
+        volume: 0.3,
       },
       velocity: 86,
       velocityVariance: 0,
@@ -47,6 +48,7 @@ export default class App extends React.Component {
     this.handleVelocityVarianceChange = this._handleVelocityVarianceChange.bind(this)
     this.handleButtonUp = this._handleButtonUp.bind(this)
     this.handleButtonDown = this._handleButtonDown.bind(this)
+    this.handleSynthSettingsChange = this._handleSynthSettingsChange.bind(this)
   }
 
   componentDidMount() {
@@ -170,6 +172,12 @@ export default class App extends React.Component {
     })
   }
 
+  _handleSynthSettingsChange(newSynthSettings) {
+    this.setState({
+      synthSettings: newSynthSettings
+    })
+  }
+
   render() {
     let {size, config, noteButtons} = this.state
 
@@ -189,6 +197,8 @@ export default class App extends React.Component {
             velocityVariance={this.state.velocityVariance}
             onVelocityChange={this.handleVelocityChange}
             onVelocityVarianceChange={this.handleVelocityVarianceChange}
+            synthSettings={this.state.synthSettings}
+            onSynthSettingsChange={this.handleSynthSettingsChange}
           />
 
           <div className="Middle">

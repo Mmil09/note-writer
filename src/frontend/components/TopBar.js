@@ -1,7 +1,6 @@
 import React from 'react';
 //import {ButtonGroup, Button, DropdownButton, Grid, Row, Col, MenuItem} from 'react-bootstrap/lib';
-import Dropdown from 'react-dropdown'
-import {DropDownMenu, Menu, MenuItem, Popover, FlatButton, Slider} from 'material-ui'
+import {DropDownMenu, Menu, MenuItem, Popover, FlatButton, Slider, List, ListItem, Subheader, Toggle} from 'material-ui'
 import Arrow from 'material-ui/svg-icons/navigation/arrow-drop-down'
 import {scales, notes, modes} from 'noteWriter'
 
@@ -90,6 +89,24 @@ export default class ToolbarExamplesSimple extends React.Component {
     });
   }
 
+  _handleSynthEnabledToggle(e, newValue) {
+    this.props.onSynthSettingsChange({
+      ...this.props.synthSettings,
+      enabled: newValue,
+    })
+  }
+
+  _renderSynthToggle() {
+
+    return (
+      <Toggle 
+        toggled={this.props.synthSettings.enabled} 
+        onToggle={this._handleSynthEnabledToggle.bind(this)}
+      />
+    )
+    
+  }
+
 
 
   render() {
@@ -128,7 +145,17 @@ export default class ToolbarExamplesSimple extends React.Component {
             <Slider style={{height: 200}} axis="y" min={0} max={127} onChange={this.props.onVelocityChange} step={1} value={this.props.velocity}/>
             <Slider style={{height: 200}} axis="y" min={0} max={50} onChange={this.props.onVelocityVarianceChange} step={1} value={this.props.velocityVariance} />
           </div> 
-        </DropdownContainer> 
+        </DropdownContainer>
+
+        <DropdownContainer label="Synth">
+          <List style={{width: '400px'}}>
+            <ListItem primaryText="Enabled" rightToggle={this._renderSynthToggle()}/>
+            <Subheader>Volume</Subheader>
+            <ListItem style={{paddingTop: '0px', paddingBottom: '0px'}} rightToggle={<label>50</label>}>
+              <Slider sliderStyle={{marginTop: '0px', marginBottom: '0px'}}  min={0} max={50}/>
+            </ListItem>
+          </List>
+        </DropdownContainer>  
 
        
         
@@ -173,7 +200,7 @@ class DropdownContainer extends React.Component {
     let {label,children, currentValue} = this.props
 
     return (
-      <div className="DropdownContainer" ref={this.handleRef}>
+      <div className="DropdownContainer">
         <div className="dropdown-label">{label}</div>
         <FlatButton className="dropdown-button" onTouchTap={this.handleTouchTap}>{currentValue}<Arrow/></FlatButton>
         <Popover
