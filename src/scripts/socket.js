@@ -1,5 +1,5 @@
 var NoteWriter = require('../noteWriter').NoteWriter
-var midi = require('./midi')
+// var midi = require('./midi')
 var server, io;
 
 
@@ -77,14 +77,14 @@ function setupSocketOutgoing(socket) {
 	
 	noteWriter.on('note_on', function(noteData) {
 		//send midi note on
-		midi.sendNoteOn(noteData.noteValue, noteData);
+		// midi.sendNoteOn(noteData.noteValue, noteData);
 		//notify clients of note_on
 		socket.emit('note_on', noteData)
 	})
 
 	noteWriter.on('note_off', function(noteData) {
 		//send midi note off
-		midi.sendNoteOff(noteData.noteValue, noteData);
+		// midi.sendNoteOff(noteData.noteValue, noteData);
 		//notify clients of note_off
 		socket.emit('note_off', noteData)
 	})
